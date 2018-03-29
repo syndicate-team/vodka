@@ -119,18 +119,22 @@ func (ds Repository) Create(data interface{}) (interface{}, error) {
 	if ds.Debug {
 		fmt.Println("Create SQL: ", SQL)
 	}
-	row, err := ds.Adapter.QueryRow(SQL)
+	result, err := ds.Adapter.Exec(SQL)
 	if err != nil {
 		return nil, err
 	}
-	var id interface{}
-	if err := row.Scan(&id); err != nil {
-		fmt.Println("Error: ", err)
-		return nil, err
-	}
-	if id != nil {
+	if id, err := result.LastInsertId(); err == nil {
 		return ds.FindByID(id)
 	}
+	// 	rows, _ := result.RowsAffected()
+	// var id interface{}
+	// if err := row.Scan(&id); err != nil {
+	// 	fmt.Println("Error: ", err)
+	// 	return nil, err
+	// }
+	// if id != nil {
+	// 	return ds.FindByID(id)
+	// }
 	return data, nil
 }
 
