@@ -167,6 +167,8 @@ func (e *Application) decorate(data interface{}, err error) []byte {
 		response["error"] = e
 	} else if err != nil {
 		response["error"] = err.Error()
+	} else {
+		response["error"] = nil
 	}
 	b, err := json.Marshal(response)
 	if err != nil {
