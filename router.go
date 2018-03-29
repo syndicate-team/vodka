@@ -34,22 +34,22 @@ func (r *Router) GetRouter() *httprouter.Router {
 func (r *Router) GET(path string, h HandlerFunc, v interface{}) {
 	r.router.GET(path, r.handle(h, v))
 }
-func (r *Router) POST(path string, h HandlerFunc, o KeyStorage, v interface{}) {
+func (r *Router) POST(path string, h HandlerFunc, v interface{}) {
 	r.router.POST(path, r.handle(h, v))
 }
-func (r *Router) PUT(path string, h HandlerFunc, o KeyStorage, v interface{}) {
+func (r *Router) PUT(path string, h HandlerFunc, v interface{}) {
 	r.router.PUT(path, r.handle(h, v))
 }
-func (r *Router) DELETE(path string, h HandlerFunc, o KeyStorage, v interface{}) {
+func (r *Router) DELETE(path string, h HandlerFunc, v interface{}) {
 	r.router.DELETE(path, r.handle(h, v))
 }
-func (r *Router) PATCH(path string, h HandlerFunc, o KeyStorage, v interface{}) {
+func (r *Router) PATCH(path string, h HandlerFunc, v interface{}) {
 	r.router.PATCH(path, r.handle(h, v))
 }
-func (r *Router) OPTIONS(path string, h HandlerFunc, o KeyStorage, v interface{}) {
+func (r *Router) OPTIONS(path string, h HandlerFunc, v interface{}) {
 	r.router.OPTIONS(path, r.handle(h, v))
 }
-func (r *Router) HEAD(path string, h HandlerFunc, o KeyStorage, v interface{}) {
+func (r *Router) HEAD(path string, h HandlerFunc, v interface{}) {
 	r.router.HEAD(path, r.handle(h, v))
 }
 
