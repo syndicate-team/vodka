@@ -192,7 +192,7 @@ func (sql *SQLBuilder) buildInsert() (SQL string) {
 	return
 }
 func (sql *SQLBuilder) buildDelete() (SQL string) {
-	SQL = queryTypeDelete
+	SQL = queryTypeDelete + " " + sql.getAliasBySource(sql.parts.table)
 	SQL += sql.buildFrom(true)
 	SQL += sql.buildWhere()
 	return
