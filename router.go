@@ -1,9 +1,11 @@
 package vodka
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -55,10 +57,8 @@ func (r *Router) HEAD(path string, h HandlerFunc, v interface{}) {
 
 func (r *Router) handle(h HandlerFunc, v interface{}) httprouter.Handle {
 	return func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-		var body []byte
-		var err error
-		if body, err = ioutil.ReadAll(req.Body); err != nil {
-			// w.Write().sendResponse(w, nil, NewServerError("reading_body", err))
+		body, err := parseBody(req)
+		if err != nil {
 			return
 		}
 		ctx := Context{
@@ -78,6 +78,29 @@ func (r *Router) handle(h HandlerFunc, v interface{}) httprouter.Handle {
 		}
 		r.dispatch(&ctx)
 	}
+}
+
+func parseBody(req *http.Request) ([]byte, error) {
+	contentType := req.Header.Get("Content-Type")
+
+	if strings.Index(contentType, "multipart/form-data") > -1 {
+		req.ParseMultipartForm(1000000)
+		d := make(map[string]interface{})
+		for key, v := range req.Form {
+			d[key] = v
+		}
+		return json.Marshal(d)
+	}
+
+	if strings.Index(contentType, "x-www-form-urlencoded") > -1 {
+		req.ParseForm()
+		d := make(map[string]interface{})
+		for key, v := range req.Form {
+			d[key] = v
+		}
+		return json.Marshal(d)
+	}
+	return ioutil.ReadAll(req.Body)
 }
 
 func parseParams(ps httprouter.Params) (params KeyStorage) {

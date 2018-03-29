@@ -186,7 +186,8 @@ func (ds Repository) Update(q Query, payload map[string]interface{}) (interface{
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Update Result: %+v\n", result)
+	id, _ := result.LastInsertId()
+	fmt.Printf("Update Result: %+v\n", id)
 	if q[ds.AutoID] != nil {
 		return ds.FindByID(q[ds.AutoID])
 	}
