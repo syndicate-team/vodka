@@ -179,6 +179,9 @@ Update - updating item in storage by query and payload
 func (ds Repository) Update(q Query, payload map[string]interface{}) (interface{}, error) {
 	builder := ds.Adapter.Builder()
 	SQL := builder.Update(ds.Source).Set(payload).Where(q).Limit(1, 0).Build()
+	if ds.Debug {
+		fmt.Println("Update SQL: ", SQL)
+	}
 	result, err := ds.Adapter.Exec(SQL)
 	if err != nil {
 		return nil, err
