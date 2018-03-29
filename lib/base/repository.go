@@ -145,6 +145,21 @@ func (ds Repository) Delete(q Query) (interface{}, error) {
 }
 
 /*
+DeleteByID - deleteing from storage by query
+*/
+func (ds Repository) DeleteByID(id interface{}) (interface{}, error) {
+	builder := ds.Adapter.Builder()
+	q := make(map[string]interface{})
+	q["id"] = id
+	SQL := builder.Delete().From(ds.Source).Where(q).Build()
+	rows, err := ds.Adapter.Exec(SQL)
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
+/*
 Update - updating item in storage by query and payload
 */
 func (ds Repository) Update(q Query, payload map[string]interface{}) (interface{}, error) {
