@@ -116,6 +116,9 @@ func (ds Repository) Create(data interface{}) (interface{}, error) {
 	builder := ds.Adapter.Builder()
 	builder.Insert(ds.Source).Values(data).ReturnID(ds.AutoID)
 	SQL := builder.Build()
+	if ds.Debug {
+		fmt.Println("Create SQL: ", SQL)
+	}
 	row, err := ds.Adapter.QueryRow(SQL)
 	if err != nil {
 		return nil, err
