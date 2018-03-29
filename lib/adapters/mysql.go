@@ -77,7 +77,7 @@ func (db *MySQL) QueryRow(SQL string) (*sql.Row, error) {
 
 func (db *MySQL) connect() error {
 	config := db.config
-	db.connectionInfo = fmt.Sprintf("%s:%s@tcp(%s:%v)/%v",
+	db.connectionInfo = fmt.Sprintf("%s:%s@tcp(%s:%v)/%v?charset=utf8mb4,utf8",
 		config.User,
 		config.Password,
 		config.Host,
