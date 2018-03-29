@@ -87,7 +87,7 @@ func parseBody(req *http.Request) ([]byte, error) {
 		req.ParseMultipartForm(1000000)
 		d := make(map[string]interface{})
 		for key, v := range req.Form {
-			d[key] = v
+			d[key] = v[0]
 		}
 		return json.Marshal(d)
 	}
@@ -96,7 +96,7 @@ func parseBody(req *http.Request) ([]byte, error) {
 		req.ParseForm()
 		d := make(map[string]interface{})
 		for key, v := range req.Form {
-			d[key] = v
+			d[key] = v[0]
 		}
 		return json.Marshal(d)
 	}
