@@ -331,7 +331,7 @@ func (sql *SQLBuilder) buildWhere() (where string) {
 		}
 		str := toString(value)
 		sign := ""
-		if strings.Index(key, "=") == 0 && strings.Index(key, ">") == 0 && strings.Index(key, "<") == 0 {
+		if strings.Index(key, "=") == -1 && strings.Index(key, ">") == -1 && strings.Index(key, "<") == -1 {
 			sign = "="
 		}
 		w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+sign+str)
