@@ -137,6 +137,10 @@ Delete - deleteing from storage by query
 func (ds Repository) Delete(q Query) (interface{}, error) {
 	builder := ds.Adapter.Builder()
 	SQL := builder.Delete().From(ds.Source).Where(q).Build()
+	if ds.Debug {
+		fmt.Println("Delete SQL: ", SQL)
+	}
+
 	rows, err := ds.Adapter.Exec(SQL)
 	if err != nil {
 		return nil, err
@@ -152,6 +156,9 @@ func (ds Repository) DeleteByID(id interface{}) (interface{}, error) {
 	q := make(map[string]interface{})
 	q["id"] = id
 	SQL := builder.Delete().From(ds.Source).Where(q).Build()
+	if ds.Debug {
+		fmt.Println("DeleteByID SQL: ", SQL)
+	}
 	rows, err := ds.Adapter.Exec(SQL)
 	if err != nil {
 		return nil, err
