@@ -183,7 +183,7 @@ func (e *Application) sendResponse(ctx *Context, data interface{}, err error) {
 		ctx.Writer.WriteHeader(e.httpCode)
 	} else {
 		if err != nil {
-			ctx.Writer.WriteHeader(ServerErrorCode)
+			ctx.Writer.WriteHeader(ErrorServerErrorCode)
 		}
 	}
 	if _, ok := data.(ResponseNoContent); ok {

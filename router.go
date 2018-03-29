@@ -10,12 +10,15 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// HandlerFunc - function that handles requests
 type HandlerFunc func(*Context) (interface{}, error)
 
+// Handler — interface for handlers. Unused for now
 type Handler interface {
 	GetMethod(string) HandlerFunc
 }
 
+// Router — main struct for routing HTTP-requests
 type Router struct {
 	ID       string
 	Routes   []string
@@ -23,34 +26,49 @@ type Router struct {
 	dispatch func(*Context)
 }
 
+// NewRouter - router constructor
 func NewRouter() *Router {
 	return &Router{
 		router: httprouter.New(),
 	}
 }
 
+// GetRouter - getting router method
 func (r *Router) GetRouter() *httprouter.Router {
 	return r.router
 }
 
+// GET - HTTP-method GET setting handler
 func (r *Router) GET(path string, h HandlerFunc, v interface{}) {
 	r.router.GET(path, r.handle(h, v))
 }
+
+// POST - HTTP-method POST setting handler
 func (r *Router) POST(path string, h HandlerFunc, v interface{}) {
 	r.router.POST(path, r.handle(h, v))
 }
+
+// PUT - HTTP-method PUT setting handler
 func (r *Router) PUT(path string, h HandlerFunc, v interface{}) {
 	r.router.PUT(path, r.handle(h, v))
 }
+
+// DELETE - HTTP-method DELETE setting handler
 func (r *Router) DELETE(path string, h HandlerFunc, v interface{}) {
 	r.router.DELETE(path, r.handle(h, v))
 }
+
+// PATCH - HTTP-method PATCH setting handler
 func (r *Router) PATCH(path string, h HandlerFunc, v interface{}) {
 	r.router.PATCH(path, r.handle(h, v))
 }
+
+// OPTIONS - HTTP-method OPTIONS setting handler
 func (r *Router) OPTIONS(path string, h HandlerFunc, v interface{}) {
 	r.router.OPTIONS(path, r.handle(h, v))
 }
+
+// HEAD - HTTP-method HEAD setting handler
 func (r *Router) HEAD(path string, h HandlerFunc, v interface{}) {
 	r.router.HEAD(path, r.handle(h, v))
 }

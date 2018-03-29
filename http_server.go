@@ -7,19 +7,28 @@ import (
 )
 
 const (
+	// ContentTypeJSON - content-type
 	ContentTypeJSON = "application/json"
 
-	RequestError      = 400
-	UnathorizedError  = 401
-	AccessDeniedError = 403
-	ServerError       = 500
-	StatusOK          = 200
-	StatusNoContent   = 204
+	// ErrorBadRequestCode - server HTTP code for BadRequest 400
+	ErrorBadRequestCode = 400
+	// ErrorUnathorizedCode - server HTTP code for Unathorized 401
+	ErrorUnathorizedCode = 401
+	// ErrorServerErrorCode - server HTTP code for ServerError 500
+	ErrorServerErrorCode = 500
+	// ErrorAccessDeniedCode - server HTTP code for ServerError 403
+	ErrorAccessDeniedCode = 403
+	// StatusOK - response with code 200
+	StatusOK = 200
+	// StatusNoContent - response with code 204
+	StatusNoContent = 204
 )
 
+// ResponseNoContent - empty struct for empty response
 type ResponseNoContent struct {
 }
 
+// HTTPConfig - HTTP server config
 type HTTPConfig struct {
 	Host        string
 	Port        int

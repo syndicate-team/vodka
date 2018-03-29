@@ -4,15 +4,7 @@ import (
 	"runtime"
 )
 
-const (
-	// BadRequestCode - server HTTP code for BadRequest 400
-	BadRequestCode = 400
-	// UnathorizedCode - server HTTP code for Unathorized 401
-	UnathorizedCode = 401
-	// ServerErrorCode - server HTTP code for ServerError 500
-	ServerErrorCode = 500
-)
-
+// Error - framework error type
 type Error struct {
 	httpCode int
 	Message  string      `json:"message"`
@@ -20,18 +12,22 @@ type Error struct {
 	Info     interface{} `json:"info"`
 }
 
+// NewServerError - 500 error decorator
 func NewServerError(message string, info interface{}) error {
-	return NewError(ServerErrorCode, message, info)
+	return NewError(ErrorServerErrorCode, message, info)
 }
 
+// NewBadRequestError - 400 error decorator
 func NewBadRequestError(message string, info interface{}) error {
-	return NewError(BadRequestCode, message, info)
+	return NewError(ErrorBadRequestCode, message, info)
 }
 
+// NewUnathorizedError - 401 error decorator
 func NewUnathorizedError(message string, info interface{}) error {
-	return NewError(UnathorizedCode, message, info)
+	return NewError(ErrorUnathorizedCode, message, info)
 }
 
+// NewError - Error constructor
 func NewError(httpCode int, message string, info interface{}) error {
 	buf := make([]byte, 2048)
 	runtime.Stack(buf, true)
