@@ -50,6 +50,9 @@ type DBConfig struct {
 	SSLmode string
 }
 
+/*
+JoinParam - joining Repository (table to query)
+*/
 type JoinParam struct {
 	Source   string
 	SourceID string
@@ -58,6 +61,7 @@ type JoinParam struct {
 	Type     string
 }
 
+// JoinParamOn - join params and conditions
 type JoinParamOn struct {
 	Source    string
 	SourceKey string
@@ -65,6 +69,7 @@ type JoinParamOn struct {
 	JoinValue interface{}
 }
 
+// OrderParam - ordering params
 type OrderParam struct {
 	OrderBy string
 	Asc     bool
