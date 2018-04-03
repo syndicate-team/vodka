@@ -74,7 +74,7 @@ func (db *MySQL) Query(v ...interface{}) (rows *sql.Rows, err error) {
 	if err != nil {
 		if isInvalidConnection(err) {
 			db.closeConnection()
-			return db.Query(v)
+			return db.Query(v...)
 		}
 	}
 	return
