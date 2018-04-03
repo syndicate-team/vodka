@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 )
@@ -46,33 +47,58 @@ func (db MySQL) Builder() Builder {
 /*
 Exec - executing SQL-query and returning *Rows
 */
-func (db *MySQL) Exec(SQL string) (sql.Result, error) {
-	if err := db.checkConnection(); err != nil {
-		return nil, err
+func (db *MySQL) Exec(SQL string) (res sql.Result, err error) {
+	if err = db.checkConnection(); err != nil {
+		return
 	}
-	return db.conn.Exec(SQL)
+	res, err = db.conn.Exec(SQL)
+	if err != nil {
+		if isInvalidConnection(err) {
+			db.closeConnection()
+			return db.Exec(SQL)
+		}
+	}
+	return
 }
 
 /*
 Query - preparing query into Statement and executing SQL-query and returning *Rows
 */
-func (db *MySQL) Query(v ...interface{}) (*sql.Rows, error) {
-	if err := db.checkConnection(); err != nil {
-		return nil, err
+func (db *MySQL) Query(v ...interface{}) (rows *sql.Rows, err error) {
+	if err = db.checkConnection(); err != nil {
+		return
 	}
 	SQL := v[0].(string)
 	values := v[1:]
-	return db.conn.Query(SQL, values...)
+	rows, err = db.conn.Query(SQL, values...)
+	if err != nil {
+		if isInvalidConnection(err) {
+			db.closeConnection()
+			return db.Query(v)
+		}
+	}
+	return
 }
 
 /*
 QueryRow - executing single row query. May be suitable for INSERT/UPDATE.
 */
-func (db *MySQL) QueryRow(SQL string) (*sql.Row, error) {
+func (db *MySQL) QueryRow(SQL string) (row *sql.Row, err error) {
 	if err := db.checkConnection(); err != nil {
 		return nil, err
 	}
-	return db.conn.QueryRow(SQL), nil
+	row, err = db.conn.QueryRow(SQL), nil
+	if err != nil {
+		if isInvalidConnection(err) {
+			db.closeConnection()
+			return db.QueryRow(SQL)
+		}
+	}
+	return
+}
+
+func isInvalidConnection(err error) bool {
+	return strings.Index(err.Error(), "invalid connection") != -1
 }
 
 func (db *MySQL) connect() error {
@@ -105,5 +131,12 @@ func (db *MySQL) checkConnection() error {
 		return db.connect()
 	}
 	fmt.Printf("Connection: %+v\n", db.conn.Stats().OpenConnections)
+	return nil
+}
+
+func (db *MySQL) closeConnection() error {
+	if db.conn != nil {
+		return db.conn.Close()
+	}
 	return nil
 }
