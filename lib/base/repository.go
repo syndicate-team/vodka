@@ -6,9 +6,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/niklucky/vodka"
+	"github.com/syndicatedb/vodka"
 
-	"github.com/niklucky/vodka/lib/adapters"
+	"github.com/syndicatedb/vodka/lib/adapters"
 
 	lib "github.com/niklucky/go-lib"
 )

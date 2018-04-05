@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/niklucky/vodka"
+	"github.com/syndicatedb/vodka"
 )
 
 // Handler - base handler

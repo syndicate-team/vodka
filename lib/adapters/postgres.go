@@ -45,22 +45,24 @@ func (psql Postgres) Builder() Builder {
 }
 
 /*
-Exec - executing SQL-query and returning *Rows
+Exec - executing SQL-query and returning Result
 */
-func (psql *Postgres) Exec(SQL string) (*sql.Rows, error) {
+func (psql *Postgres) Exec(SQL string) (sql.Result, error) {
 	if err := psql.checkConnection(); err != nil {
 		return nil, err
 	}
-	return psql.Conn.Query(SQL)
+	return psql.Conn.Exec(SQL)
 }
 
 /*
 Query - preparing query into Statement and executing SQL-query and returning *Rows
 */
-func (psql *Postgres) Query(SQL string, values []interface{}) (*sql.Rows, error) {
+func (psql *Postgres) Query(v ...interface{}) (*sql.Rows, error) {
 	if err := psql.checkConnection(); err != nil {
 		return nil, err
 	}
+	SQL := v[0].(string)
+	values := v[1:]
 	return psql.Conn.Query(SQL, values...)
 }
 
