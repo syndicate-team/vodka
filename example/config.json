@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "http_server": {
+    "port": 4346
+  },
+  "postgres": {
+    "host": "localhost",
+    "user": "postgres",
+    "port": 5432,
+    "password": "12345",
+    "database": "test",
+    "timeout": 1,
+    "attempts": 5
+  }
+}
