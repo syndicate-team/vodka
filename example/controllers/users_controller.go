@@ -36,9 +36,10 @@ type UserValidation struct {
 			id string `required:"true"`
 		}
 		Body struct {
-			name   string
-			count  int64
-			amount float64
+			name      string
+			count     int64
+			amount    float64
+			status_id int64 `input:"statusId"`
 		}
 	}
 	Update struct {

@@ -28,7 +28,7 @@ type parts struct {
 	table      string
 	fields     []string
 	where      map[string]interface{}
-	join       []JoinParam
+	join       []Join
 	order      []OrderParam
 	limit      int
 	offset     int
@@ -128,12 +128,9 @@ func (sql *postgres) Where(where map[string]interface{}) Builder {
 Join - join source with params into query.
 Every table in SQL query have to have Alias. If you'll not provide - it will be generated
 */
-func (sql *postgres) Join(jp JoinParam) Builder {
-	if jp.SourceID == "" {
-		jp.SourceID = tablePrefix + strconv.Itoa(len(sql.parts.join)+1)
-	}
+func (sql *postgres) Join(jp Join) Builder {
 	sql.parts.join = append(sql.parts.join, jp)
-	sql.addToSources(jp.Source, jp.SourceID)
+	sql.addToSources(jp.Source, jp.Source)
 	return sql
 }
 
@@ -241,7 +238,7 @@ func (sql *postgres) buildFields() string {
 	}
 	for _, j := range sql.parts.join {
 		for _, f := range j.Fields {
-			fields = append(fields, j.SourceID+"."+f)
+			fields = append(fields, j.Source+"."+f)
 		}
 	}
 	return " " + strings.Join(fields, ", ")
@@ -252,23 +249,8 @@ func (sql *postgres) buildJoin() (join string) {
 		return
 	}
 	for _, j := range sql.parts.join {
-		join += " " + strings.ToUpper(j.Type) + " JOIN " + j.Source + " AS " + j.SourceID + " ON "
-		var keys []string
-		for _, on := range j.On {
-			var key string
-			if on.Source != "" {
-				key += sql.getAliasBySource(on.Source) + "." + on.SourceKey
-			} else {
-				key += sql.getAliasBySource(sql.parts.table) + "." + on.SourceKey
-			}
-			if on.JoinValue != nil {
-				key += formatValue(on.JoinValue)
-			} else {
-				key += "=" + j.SourceID + "." + on.JoinKey
-			}
-			keys = append(keys, key)
-		}
-		join += strings.Join(keys, " AND ")
+		join += " " + strings.ToUpper(j.Type) + " JOIN " + j.Source + " AS " + j.Source + " ON "
+		join += j.Source + "." + j.Key + " = " + sql.getAliasBySource(sql.parts.table) + "." + j.TargetKey
 	}
 	return
 }

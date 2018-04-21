@@ -19,28 +19,20 @@ type Builder interface {
 	From(string) Builder
 	Where(map[string]interface{}) Builder
 	Limit(int, int) Builder
-	Join(JoinParam) Builder
+	Join(Join) Builder
 	Order(OrderParam) Builder
 	Build() string
 }
 
 /*
-JoinParam - joining Repository (table to query)
+Join - joining Repository (table to query)
 */
-type JoinParam struct {
-	Source   string
-	SourceID string
-	Fields   []string
-	On       []JoinParamOn
-	Type     string
-}
-
-// JoinParamOn - join params and conditions
-type JoinParamOn struct {
+type Join struct {
 	Source    string
-	SourceKey string
-	JoinKey   string
-	JoinValue interface{}
+	Key       string
+	TargetKey string
+	Fields    []string
+	Type      string
 }
 
 // OrderParam - ordering params

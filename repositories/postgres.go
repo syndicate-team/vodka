@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/niklucky/vodka/builders"
+
 	"github.com/niklucky/vodka"
 	"github.com/niklucky/vodka/adapters"
 	uuid "github.com/nu7hatch/gouuid"
@@ -24,7 +26,7 @@ type Postgres struct {
 	source             string
 	mapper             Mapper
 	debug              bool
-	joinedRepositories map[string]joinRepository
+	joinedRepositories map[string]builders.Join
 }
 
 var defaultParams = make(map[string]interface{})
@@ -61,7 +63,7 @@ func NewPostgres(adapter adapters.Adapter, source string, model interface{}) Rec
 		source:             source,
 		model:              model,
 		debug:              isDebug(),
-		joinedRepositories: make(map[string]joinRepository),
+		joinedRepositories: make(map[string]builders.Join),
 	}
 }
 
@@ -78,8 +80,14 @@ func (ds *Postgres) SetMapper(m Mapper) {
 @param joinKey - key of joined source to match with main source
 @sourceKey - key of main source to join
 */
-func (ds *Postgres) Join(joinSource string, joinKey string, sourceKey string, joinType string) {
-
+func (ds *Postgres) Join(source, key, targetKey, joinType string, fields []string) {
+	ds.joinedRepositories[source] = builders.Join{
+		Source:    source,
+		Key:       key,
+		TargetKey: targetKey,
+		Type:      joinType,
+		Fields:    fields,
+	}
 }
 
 /*
@@ -255,42 +263,17 @@ func (ds *Postgres) fetch(query QueryMap, params interface{}) ([]interface{}, er
 		Where(query).
 		Limit(mod.limit, mod.skip)
 
-	// if len(ds.joinedRepositories) > 0 {
-	// 	fmt.Printf("Join: %+v\n", ds.joinedRepositories)
-	// 	for sourceID, j := range ds.joinedRepositories {
-	// 		var on []adapters.JoinParamOn
-	// 		if j.condition != nil {
-	// 			for key, v := range j.condition {
-	// 				on = append(on, adapters.JoinParamOn{
-	// 					SourceKey: fmt.Sprintf("%v", v),
-	// 					JoinKey:   key,
-	// 				})
-	// 			}
-	// 		}
-	// 		if j.conditionValue != nil {
-	// 			for key, v := range j.conditionValue {
-	// 				on = append(on, adapters.JoinParamOn{
-	// 					Source:    j.source,
-	// 					SourceKey: key,
-	// 					JoinValue: v,
-	// 				})
-	// 			}
-	// 		}
-	// 		qb.Join(adapters.JoinParam{
-	// 			SourceID: sourceID,
-	// 			Source:   j.source,
-	// 			Fields:   lib.GetStructTags(j.model, "db", true),
-	// 			Type:     j.joinType,
-	// 			On:       on,
-	// 		})
-	// 	}
-	// }
+	if len(ds.joinedRepositories) > 0 {
+		for _, j := range ds.joinedRepositories {
+			qb.Join(j)
+		}
+	}
 
-	// if len(mod.orderBy) > 0 {
-	// 	for _, o := range mod.orderBy {
-	// 		qb.Order(o)
-	// 	}
-	// }
+	if len(mod.orderBy) > 0 {
+		for _, o := range mod.orderBy {
+			qb.Order(o)
+		}
+	}
 
 	SQL := qb.Build()
 	if ds.debug {
@@ -377,21 +360,21 @@ func parseParams(params interface{}) (m QueryModificator) {
 		if p["limit"] != nil {
 			m.limit = p["limit"].(int)
 		}
-		// if p["orderBy"] != nil {
-		// 	var orderParams adapters.OrderParam
-		// 	var orderParamsArr []adapters.OrderParam
+		if p["orderBy"] != nil {
+			var orderParams builders.OrderParam
+			var orderParamsArr []builders.OrderParam
 
-		// 	orderParams.OrderBy = p["orderBy"].(string)
+			orderParams.OrderBy = p["orderBy"].(string)
 
-		// 	if p["order"] == "asc" {
-		// 		orderParams.Asc = true
-		// 	} else {
-		// 		orderParams.Desc = true
-		// 	}
+			if p["order"] == "asc" {
+				orderParams.Asc = true
+			} else {
+				orderParams.Desc = true
+			}
 
-		// 	orderParamsArr = append(orderParamsArr, orderParams)
-		// 	m.orderBy = orderParamsArr
-		// }
+			orderParamsArr = append(orderParamsArr, orderParams)
+			m.orderBy = orderParamsArr
+		}
 	}
 	return
 }

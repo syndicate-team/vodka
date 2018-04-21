@@ -1,5 +1,9 @@
 package repositories
 
+import (
+	"github.com/niklucky/vodka/builders"
+)
+
 const (
 	defaultLimit = 100
 )
@@ -8,7 +12,7 @@ const (
 Recorder - Repository interface
 */
 type Recorder interface {
-	Join(string, string, string, string)
+	Join(source, key, targetKey, joinType string, fields []string)
 	Find(QueryMap, ParamsMap) (interface{}, error)
 	FindByID(interface{}) (interface{}, error)
 	Create(interface{}) (interface{}, error)
@@ -34,19 +38,11 @@ type QueryModificator struct {
 	fields  []string
 	skip    int
 	limit   int
-	orderBy map[string]string
+	orderBy []builders.OrderParam
 }
 
 // Mapper - mapping interface
 type Mapper interface {
 	Collection([]interface{}) (interface{}, error)
 	Item(interface{}) (interface{}, error)
-}
-
-type joinRepository struct {
-	source         string
-	model          interface{}
-	condition      map[string]interface{}
-	conditionValue map[string]interface{}
-	joinType       string
 }
