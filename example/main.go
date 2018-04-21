@@ -17,7 +17,7 @@ var repos infrastructure
 var config Config
 var err error
 
-var userModule users.API
+var userModule *users.API
 
 func init() {
 	if config, err = NewConfig("./config.json"); err != nil {
@@ -33,7 +33,9 @@ func main() {
 	engine.Server(config.HTTPServer)
 	userCtrl := controllers.NewUsers(userModule)
 	var userValidation controllers.UserValidation
+	engine.Router.GET("/users", userCtrl.Find, userValidation.Find)
 	engine.Router.GET("/users/:id", userCtrl.FindByID, userValidation.FindByID)
+	engine.Router.POST("/users", userCtrl.Create, userValidation.Create)
 
 	for {
 		engine.Start()

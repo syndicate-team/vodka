@@ -32,6 +32,18 @@ func (e *Application) validate(ctx *Context) (err error) {
 				errs = append(errs, "Params: "+err.Error())
 			}
 		}
+		if field.Name == "Body" {
+			var body map[string]interface{}
+			json.Unmarshal(ctx.Raw.Body, &body)
+			var b KeyStorage
+			for key, v := range body {
+				b.Set(key, v)
+			}
+			ctx.Body, err = validateMap(field.Type, b)
+			if err != nil {
+				errs = append(errs, "Params: "+err.Error())
+			}
+		}
 	}
 
 	ctx.Options.Set("params", getParamsFromQuery(ctx.Raw.Query))
@@ -126,13 +138,14 @@ func validateType(key string, value interface{}, t string) (res interface{}, err
 	if value == nil {
 		return value, nil
 	}
+	fmt.Printf("%T\n", value)
 	switch v := value.(type) {
-	case int:
-		if t == "int" {
-			res = v
+	case int64:
+		if t == "int64" {
+			res = int64(v)
 			return
 		}
-		if t == "float" {
+		if t == "float64" {
 			res = float64(v)
 			return
 		}
@@ -145,7 +158,28 @@ func validateType(key string, value interface{}, t string) (res interface{}, err
 			return
 		}
 		if t == "string" {
-			res = strconv.Itoa(v)
+			res = strconv.FormatInt(v, 10)
+			return
+		}
+	case float64:
+		if t == "int64" {
+			res = int64(v)
+			return
+		}
+		if t == "float64" {
+			res = float64(v)
+			return
+		}
+		if t == "bool" {
+			if v > 0 {
+				res = true
+			} else {
+				res = false
+			}
+			return
+		}
+		if t == "string" {
+			res = strconv.FormatFloat(v, 'f', 10, 64)
 			return
 		}
 
@@ -158,7 +192,7 @@ func validateType(key string, value interface{}, t string) (res interface{}, err
 			res, err = strconv.ParseInt(v, 10, 64)
 			return
 		}
-		if t == "float" {
+		if t == "float" || t == "float64" {
 			res, err = strconv.ParseFloat(v, 64)
 			return
 		}

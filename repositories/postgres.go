@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 
 	"github.com/niklucky/vodka"
 	"github.com/niklucky/vodka/adapters"
+	uuid "github.com/nu7hatch/gouuid"
 
 	lib "github.com/niklucky/go-lib"
 )
@@ -17,6 +19,7 @@ Postgres - is responsible for storing/fetching data
 */
 type Postgres struct {
 	adapter            adapters.Adapter
+	key                string
 	model              interface{}
 	source             string
 	mapper             Mapper
@@ -24,21 +27,49 @@ type Postgres struct {
 	joinedRepositories map[string]joinRepository
 }
 
+var defaultParams = make(map[string]interface{})
+
+// getKeyByModel - getting primary key for model to select after create
+func getKeyByModel(model interface{}) (key string) {
+	st := reflect.ValueOf(model).Elem().Type()
+	for i := 0; i < st.NumField(); i++ {
+		field := st.Field(i)
+		if field.Tag.Get("key") != "" {
+			key = field.Name
+			if field.Tag.Get("db") != "" {
+				key = field.Tag.Get("db")
+			}
+		}
+	}
+	return
+}
+
+func isDebug() (debug bool) {
+	if os.Getenv("DEBUG") != "" {
+		return true
+	}
+	return
+}
+
 /*
-NewPostgres - Postgres repository constructor
+NewPostgres - Postgres repository recorder
 */
 func NewPostgres(adapter adapters.Adapter, source string, model interface{}) Recorder {
-	var debug bool
-	if os.Getenv("DEBUG") != "" {
-		debug = true
-	}
 	return &Postgres{
 		adapter:            adapter,
+		key:                getKeyByModel(model),
 		source:             source,
 		model:              model,
-		debug:              debug,
+		debug:              isDebug(),
 		joinedRepositories: make(map[string]joinRepository),
 	}
+}
+
+// SetMapper - setting mapper to process data.
+// By default will be used base mapper that fills provided Model
+// or just will return interface{} with type map[string]interface{}
+func (ds *Postgres) SetMapper(m Mapper) {
+	ds.mapper = m
 }
 
 // Join - joining source to main.
@@ -55,9 +86,21 @@ func (ds *Postgres) Join(joinSource string, joinKey string, sourceKey string, jo
 Create - save data to Storage with Adapter
 */
 func (ds *Postgres) Create(data interface{}) (interface{}, error) {
+	// Checking for auto generated uuid. If found — generating
+	uuidx := ds.generateUUID()
+	var dataMap map[string]interface{}
+	if len(uuidx) > 0 {
+		dataMap = data.(map[string]interface{})
+		for key, v := range uuidx {
+			dataMap[key] = v
+		}
+		data = dataMap
+	}
+	// Starting to build INSERT query
 	builder := ds.adapter.Builder()
 	builder.Insert(ds.source).Values(data)
 	SQL := builder.Build()
+
 	if ds.debug {
 		fmt.Println("Create SQL: ", SQL)
 	}
@@ -65,19 +108,38 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	// We have auto increment id that is returned
 	if id, err := result.LastInsertId(); err == nil {
 		return ds.FindByID(id)
 	}
-	// 	rows, _ := result.RowsAffected()
-	// var id interface{}
-	// if err := row.Scan(&id); err != nil {
-	// 	fmt.Println("Error: ", err)
-	// 	return nil, err
-	// }
-	// if id != nil {
-	// 	return ds.FindByID(id)
-	// }
+	// We have primary key
+	if ds.key != "" && dataMap[ds.key] != nil {
+		items, err := ds.Find(dataMap, defaultParams)
+		if err != nil {
+			return data, err
+		}
+		return items.([]interface{})[0], nil
+	}
+	// We have nothing, just returning payload back
 	return data, nil
+}
+
+func (ds *Postgres) generateUUID() (fields map[string]string) {
+	fields = make(map[string]string)
+	st := reflect.ValueOf(ds.model).Elem().Type()
+	for i := 0; i < st.NumField(); i++ {
+		field := st.Field(i)
+		fieldTag := field.Tag.Get("uuid")
+		if fieldTag != "" {
+			var fieldName = field.Name
+			if field.Tag.Get("db") != "" {
+				fieldName = field.Tag.Get("db")
+			}
+			gid, _ := uuid.NewV4()
+			fields[fieldName] = gid.String()
+		}
+	}
+	return
 }
 
 /*
@@ -172,7 +234,7 @@ func (ds *Postgres) fetch(query QueryMap, params interface{}) ([]interface{}, er
 	var fields []string
 	mod := parseParams(params)
 	if len(mod.fields) == 0 {
-		fields = lib.GetStructTags(ds.model, "db", true)
+		fields = lib.GetStructTags(reflect.ValueOf(ds.model).Elem(), "db", true)
 	} else {
 		fields = mod.fields
 	}
@@ -265,7 +327,13 @@ func (ds *Postgres) buildResult(rows *sql.Rows) ([]interface{}, error) {
 				data[v] = rawResult[key]
 			}
 		}
-		result = append(result, data)
+		if ds.model != nil {
+			m := reflect.ValueOf(ds.model)
+			a := populateStructByMap(m, data)
+			result = append(result, a)
+		} else {
+			result = append(result, data)
+		}
 	}
 	return result, nil
 }

@@ -1,28 +1,31 @@
 package users
 
 import (
+	"time"
+
 	"github.com/niklucky/vodka/adapters"
 	"github.com/niklucky/vodka/base"
 	"github.com/niklucky/vodka/repositories"
 )
 
-type API interface {
-	FindByID(interface{}) (interface{}, error)
-}
-
-type api struct {
+type API struct {
 	base.Service
-	repository repositories.Recorder
 }
 
 type User struct {
-	ID   string `db:"id"`
-	Name string `db:"name"`
+	ID        string    `db:"id" uuid:"true" key:"true" json:"Id"`
+	Name      string    `db:"name" json:"Name"`
+	CreatedAt time.Time `db:"created_at" json:"createdAt"`
+	Amount    float64   `db:"amount"`
+	Count     int64     `db:"count"`
 }
 
-func New(adapter adapters.Adapter) API {
-	repo := repositories.NewPostgres(adapter, "users", User{})
-	return &api{
+const source = "users"
+
+func New(adapter adapters.Adapter) *API {
+	var u User
+	repo := repositories.NewPostgres(adapter, source, &u)
+	return &API{
 		Service: base.NewService(repo),
 	}
 }

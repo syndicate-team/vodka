@@ -204,7 +204,7 @@ func (sql *postgres) buildValues() string {
 
 	if data, ok := sql.parts.insertData.(map[string]interface{}); ok {
 		for key, value := range data {
-			keys = append(keys, "`"+key+"`")
+			keys = append(keys, ""+key+"")
 			values = append(values, toString(value))
 		}
 	}

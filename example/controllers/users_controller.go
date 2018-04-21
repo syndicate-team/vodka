@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	"github.com/niklucky/vodka"
+	"github.com/niklucky/vodka/base"
 	"github.com/niklucky/vodka/example/modules/users"
 )
 
 type Users struct {
-	Service users.API
+	base.Controller
 }
 
 type UserValidation struct {
@@ -15,14 +15,22 @@ type UserValidation struct {
 			id string `required:"true"`
 		}
 	}
-}
-
-func NewUsers(m users.API) *Users {
-	return &Users{
-		Service: m,
+	Find struct {
+		Query struct {
+			id string
+		}
+	}
+	Create struct {
+		Body struct {
+			name   string  `required:"true"`
+			count  int64   `required:"true"`
+			amount float64 `required:"true"`
+		}
 	}
 }
 
-func (ctrl *Users) FindByID(ctx *vodka.Context) (interface{}, error) {
-	return ctrl.Service.FindByID(ctx.Params.GetString("id"))
+func NewUsers(m *users.API) *Users {
+	return &Users{
+		Controller: base.NewController(m),
+	}
 }
