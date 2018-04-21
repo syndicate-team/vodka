@@ -11,17 +11,17 @@ func populateStructByMap(rv reflect.Value, data map[string]interface{}) interfac
 	// val := reflect.ValueOf(str)
 	st := rv.Elem()
 	t := st.Type()
-	fmt.Printf("val: %+v\n", st)
-	fmt.Printf("data: %+v\n", data)
-	fmt.Printf("type: %+v\n", t)
+	// fmt.Printf("val: %+v\n", st)
+	// fmt.Printf("data: %+v\n", data)
+	// fmt.Printf("type: %+v\n", t)
 	for i := 0; i < st.NumField(); i++ {
 		key := t.Field(i).Name
 		if t.Field(i).Tag.Get("db") != "" {
 			key = t.Field(i).Tag.Get("db")
 		}
-		fmt.Println("key: ", key)
+		// fmt.Println("key: ", key)
 		if v, ok := data[key]; ok {
-			fmt.Printf("v: %T, %s\n", v, st.Field(i).Type().String())
+			// fmt.Printf("v: %T, %s\n", v, st.Field(i).Type().String())
 			switch st.Field(i).Type().String() {
 			case "int64":
 				st.Field(i).SetInt(getInt64(v))
@@ -40,7 +40,6 @@ func populateStructByMap(rv reflect.Value, data map[string]interface{}) interfac
 }
 
 func getTime(v interface{}) time.Time {
-	fmt.Printf("%T: ", v)
 	switch v.(type) {
 	case int64:
 		str := strconv.FormatInt(v.(int64), 10)

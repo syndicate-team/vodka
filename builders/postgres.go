@@ -192,7 +192,7 @@ func (sql *postgres) buildInsert() (SQL string) {
 	return
 }
 func (sql *postgres) buildDelete() (SQL string) {
-	SQL = queryTypeDelete + " " + sql.getAliasBySource(sql.parts.table)
+	SQL = queryTypeDelete
 	SQL += sql.buildFrom(true)
 	SQL += sql.buildWhere()
 	return
@@ -348,7 +348,7 @@ func (sql *postgres) buildSetter() (where string) {
 	if data, ok := sql.parts.insertData.(map[string]interface{}); ok {
 		for key, value := range data {
 			str := toString(value)
-			w = append(w, "`"+key+"` = "+str)
+			w = append(w, ""+key+" = "+str)
 		}
 	}
 	return where + strings.Join(w, ", ")

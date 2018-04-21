@@ -170,11 +170,11 @@ func (ds *Postgres) DeleteByID(id interface{}) (interface{}, error) {
 	if ds.debug {
 		fmt.Println("DeleteByID SQL: ", SQL)
 	}
-	rows, err := ds.adapter.Exec(SQL)
+	result, err := ds.adapter.Exec(SQL)
 	if err != nil {
 		return nil, err
 	}
-	return rows, nil
+	return result, nil
 }
 
 /*
@@ -186,13 +186,18 @@ func (ds *Postgres) Update(q QueryMap, payload map[string]interface{}) (interfac
 	if ds.debug {
 		fmt.Println("Update SQL: ", SQL)
 	}
-	result, err := ds.adapter.Exec(SQL)
+	_, err := ds.adapter.Exec(SQL)
 	if err != nil {
 		return nil, err
 	}
-	id, _ := result.LastInsertId()
-	fmt.Printf("Update Result: %+v\n", id)
-	return nil, nil
+	var p ParamsMap
+	// Checking for updated fields
+	for key, v := range payload {
+		if _, ok := q[key]; ok {
+			q[key] = v
+		}
+	}
+	return ds.Find(q, p)
 }
 
 /*
@@ -218,7 +223,11 @@ FindByID - fetching Object by id. interface{} because id could be string or int
 */
 func (ds *Postgres) FindByID(id interface{}) (interface{}, error) {
 	q := make(map[string]interface{})
-	q["id"] = id
+	if ds.key != "" {
+		q[ds.key] = id
+	} else {
+		q["id"] = id
+	}
 	data, err := ds.fetch(q, nil)
 	if err != nil {
 		return nil, err
@@ -357,7 +366,8 @@ func parseParams(params interface{}) (m QueryModificator) {
 	if params == nil {
 		return
 	}
-	if p, ok := params.(map[string]interface{}); ok {
+	// if p, ok := params.(map[string]interface{}); ok {
+	if p, ok := params.(ParamsMap); ok {
 		if p["fields"] != nil {
 			m.fields = p["fields"].([]string)
 		}

@@ -38,6 +38,9 @@ func main() {
 	engine.Router.GET("/users", userCtrl.Find, userValidation.Find)
 	engine.Router.GET("/users/:id", userCtrl.FindByID, userValidation.FindByID)
 	engine.Router.POST("/users", userCtrl.Create, userValidation.Create)
+	engine.Router.PUT("/users/:id", userCtrl.UpdateByID, userValidation.UpdateByID)
+	engine.Router.PUT("/users", userCtrl.Update, userValidation.Update)
+	engine.Router.DELETE("/users/:id", userCtrl.DeleteByID, userValidation.FindByID)
 
 	for {
 		engine.Start()

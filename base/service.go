@@ -8,6 +8,8 @@ type Service interface {
 	Find(map[string]interface{}, map[string]interface{}) (interface{}, error)
 	FindByID(interface{}) (interface{}, error)
 	Create(interface{}) (interface{}, error)
+	Update(map[string]interface{}, map[string]interface{}) (interface{}, error)
+	DeleteByID(interface{}) (interface{}, error)
 }
 
 type service struct {
@@ -30,4 +32,12 @@ func (s *service) Find(query, params map[string]interface{}) (interface{}, error
 
 func (s *service) Create(payload interface{}) (interface{}, error) {
 	return s.repository.Create(payload)
+}
+
+func (s *service) Update(query, payload map[string]interface{}) (interface{}, error) {
+	return s.repository.Update(query, payload)
+}
+
+func (s *service) DeleteByID(id interface{}) (interface{}, error) {
+	return s.repository.DeleteByID(id)
 }

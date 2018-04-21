@@ -31,6 +31,27 @@ type UserValidation struct {
 			amount float64 `required:"true"`
 		}
 	}
+	UpdateByID struct {
+		Params struct {
+			id string `required:"true"`
+		}
+		Body struct {
+			name   string
+			count  int64
+			amount float64
+		}
+	}
+	Update struct {
+		Query struct {
+			id   string
+			name string
+		}
+		Body struct {
+			name   string
+			count  int64
+			amount float64
+		}
+	}
 }
 
 // NewUsers - users constructors
