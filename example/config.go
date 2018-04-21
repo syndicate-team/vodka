@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
-	"os"
 
 	"github.com/niklucky/go-lib"
 	"github.com/niklucky/vodka"
@@ -17,7 +15,6 @@ type Config struct {
 	Version    string           `json:"version"`
 	HTTPServer vodka.HTTPConfig `json:"http_server"`
 	Postgres   adapters.Config  `json:"postgres"`
-	Debug      bool
 }
 
 /*
@@ -33,10 +30,6 @@ func NewConfig(configFileName string) (Config, error) {
 	err = json.Unmarshal(fileData, &config)
 	if err != nil {
 		return config, err
-	}
-	if os.Getenv("DEBUG") == "true" {
-		config.Debug = true
-		log.Println("Running in debug mode")
 	}
 	return config, nil
 }

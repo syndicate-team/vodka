@@ -5,10 +5,12 @@ import (
 	"github.com/niklucky/vodka/example/modules/users"
 )
 
+// Users - users controller struct
 type Users struct {
 	base.Controller
 }
 
+// UserValidation - users controller struct
 type UserValidation struct {
 	FindByID struct {
 		Params struct {
@@ -17,9 +19,9 @@ type UserValidation struct {
 	}
 	Find struct {
 		Query struct {
-			id         string
-			name       string
-			created_at int64 `input:"created_at"`
+			id        string
+			name      string
+			createdAt string
 		}
 	}
 	Create struct {
@@ -31,6 +33,7 @@ type UserValidation struct {
 	}
 }
 
+// NewUsers - users constructors
 func NewUsers(m *users.API) *Users {
 	return &Users{
 		Controller: base.NewController(m),
