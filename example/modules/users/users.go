@@ -13,8 +13,8 @@ type API struct {
 }
 
 type User struct {
-	ID        string    `db:"id" uuid:"true" key:"true" json:"Id"`
-	Name      string    `db:"name" json:"Name"`
+	ID        string    `db:"id" uuid:"true" key:"true" json:"id"`
+	Name      string    `db:"name" json:"name"`
 	CreatedAt time.Time `db:"created_at" json:"createdAt"`
 	Amount    float64   `db:"amount"`
 	Count     int64     `db:"count"`

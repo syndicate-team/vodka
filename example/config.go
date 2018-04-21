@@ -34,7 +34,7 @@ func NewConfig(configFileName string) (Config, error) {
 	if err != nil {
 		return config, err
 	}
-	if os.Getenv("DEBUG") != "" {
+	if os.Getenv("DEBUG") == "true" {
 		config.Debug = true
 		log.Println("Running in debug mode")
 	}

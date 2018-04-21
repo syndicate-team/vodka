@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+var isDebug bool
+
 // Application - main app struct
 type Application struct {
 	Router     *Router
@@ -40,8 +42,8 @@ func New() *Application {
 		Router: NewRouter(),
 	}
 	app.Router.dispatch = app.dispatch
-	if os.Getenv("DEBUG") != "" {
-		app.Debug = true
+	if os.Getenv("DEBUG") == "true" {
+		isDebug = true
 	}
 	return &app
 }

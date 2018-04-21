@@ -31,12 +31,15 @@ func NewUnathorizedError(message string, info interface{}) error {
 func NewError(httpCode int, message string, info interface{}) error {
 	buf := make([]byte, 2048)
 	runtime.Stack(buf, true)
-	return Error{
+	e := Error{
 		httpCode: httpCode,
 		Message:  message,
 		Info:     info,
-		Stack:    string(buf),
 	}
+	if isDebug {
+		e.Stack = string(buf)
+	}
+	return e
 }
 
 func (e Error) Error() string {

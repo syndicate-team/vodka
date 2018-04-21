@@ -12,7 +12,7 @@ import (
 
 func (e *Application) validate(ctx *Context) (err error) {
 	var errs []string
-	if e.Debug {
+	if isDebug {
 		log.Printf("Validation: %+v", ctx.Validation)
 	}
 	v := ctx.Validation

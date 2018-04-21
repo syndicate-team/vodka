@@ -31,8 +31,10 @@ func init() {
 func main() {
 	engine := vodka.New()
 	engine.Server(config.HTTPServer)
+
 	userCtrl := controllers.NewUsers(userModule)
 	var userValidation controllers.UserValidation
+
 	engine.Router.GET("/users", userCtrl.Find, userValidation.Find)
 	engine.Router.GET("/users/:id", userCtrl.FindByID, userValidation.FindByID)
 	engine.Router.POST("/users", userCtrl.Create, userValidation.Create)

@@ -45,7 +45,7 @@ func getKeyByModel(model interface{}) (key string) {
 }
 
 func isDebug() (debug bool) {
-	if os.Getenv("DEBUG") != "" {
+	if os.Getenv("DEBUG") == "true" {
 		return true
 	}
 	return
