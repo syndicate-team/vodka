@@ -4,6 +4,7 @@ import (
 	"github.com/niklucky/vodka/repositories"
 )
 
+// Service - base service interface that implements basic CRUD methods for base controller
 type Service interface {
 	Find(map[string]interface{}, map[string]interface{}) (interface{}, error)
 	FindByID(interface{}) (interface{}, error)
@@ -16,7 +17,8 @@ type service struct {
 	repository repositories.Recorder
 }
 
-func NewService(repo repositories.Recorder) *service {
+// NewService - service constructor
+func NewService(repo repositories.Recorder) Service {
 	return &service{
 		repository: repo,
 	}

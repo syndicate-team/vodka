@@ -344,37 +344,3 @@ func (ds *Postgres) mapItem(data interface{}) (interface{}, error) {
 	}
 	return data, nil
 }
-
-func parseParams(params interface{}) (m QueryModificator) {
-	if params == nil {
-		return
-	}
-	// if p, ok := params.(map[string]interface{}); ok {
-	if p, ok := params.(ParamsMap); ok {
-		if p["fields"] != nil {
-			m.fields = p["fields"].([]string)
-		}
-		if p["skip"] != nil {
-			m.skip = p["skip"].(int)
-		}
-		if p["limit"] != nil {
-			m.limit = p["limit"].(int)
-		}
-		if p["orderBy"] != nil {
-			var orderParams builders.OrderParam
-			var orderParamsArr []builders.OrderParam
-
-			orderParams.OrderBy = p["orderBy"].(string)
-
-			if p["order"] == "asc" {
-				orderParams.Asc = true
-			} else {
-				orderParams.Desc = true
-			}
-
-			orderParamsArr = append(orderParamsArr, orderParams)
-			m.orderBy = orderParamsArr
-		}
-	}
-	return
-}

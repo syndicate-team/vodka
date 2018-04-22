@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/niklucky/vodka/builders"
 )
 
 func populateStructByMap(rv reflect.Value, data map[string]interface{}) interface{} {
@@ -21,6 +23,9 @@ func populateStructByMap(rv reflect.Value, data map[string]interface{}) interfac
 		}
 		// fmt.Println("key: ", key)
 		if v, ok := data[key]; ok {
+			if v == nil {
+				continue
+			}
 			// fmt.Printf("v: %T, %s\n", v, st.Field(i).Type().String())
 			switch st.Field(i).Type().String() {
 			case "int64":
@@ -96,4 +101,38 @@ func getBool(v interface{}) bool {
 		return b
 	}
 	return false
+}
+
+func parseParams(params interface{}) (m QueryModificator) {
+	if params == nil {
+		return
+	}
+	// if p, ok := params.(map[string]interface{}); ok {
+	if p, ok := params.(ParamsMap); ok {
+		if p["fields"] != nil {
+			m.fields = p["fields"].([]string)
+		}
+		if p["skip"] != nil {
+			m.skip = p["skip"].(int)
+		}
+		if p["limit"] != nil {
+			m.limit = p["limit"].(int)
+		}
+		if p["orderBy"] != nil {
+			var orderParams builders.OrderParam
+			var orderParamsArr []builders.OrderParam
+
+			orderParams.OrderBy = p["orderBy"].(string)
+
+			if p["order"] == "asc" {
+				orderParams.Asc = true
+			} else {
+				orderParams.Desc = true
+			}
+
+			orderParamsArr = append(orderParamsArr, orderParams)
+			m.orderBy = orderParamsArr
+		}
+	}
+	return
 }

@@ -8,10 +8,12 @@ import (
 	"github.com/niklucky/vodka/repositories"
 )
 
+// API — external API for module
 type API struct {
 	base.Service
 }
 
+// User — struct that describes User
 type User struct {
 	ID        string    `db:"id" uuid:"true" key:"true" json:"id"`
 	Name      string    `db:"name" json:"name"`
@@ -23,10 +25,11 @@ type User struct {
 
 const source = "users"
 
+// New - module constructor
 func New(adapter adapters.Adapter) *API {
 	var u User
 	repo := repositories.NewPostgres(adapter, source, &u)
-	repo.Join("statuses", "id", "status_id", "left", []string{"name as status_name"})
+	repo.Join("statuses", "id", "status_id", "", []string{"name as status_name"})
 	return &API{
 		Service: base.NewService(repo),
 	}
