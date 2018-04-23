@@ -10,9 +10,9 @@ var isDebug bool
 
 // Application - main app struct
 type Application struct {
-	Router     *Router
-	HTTPServer *HTTPServer
-
+	Router      *Router
+	HTTPServer  *HTTPServer
+	validator   Validator
 	middlewares []Middleware
 	hooks       []Hook
 	decorator   Decorator
@@ -39,7 +39,8 @@ New - Application constructor
 */
 func New() *Application {
 	app := Application{
-		Router: NewRouter(),
+		Router:    NewRouter(),
+		validator: Validator{},
 	}
 	app.Router.dispatch = app.dispatch
 	if os.Getenv("DEBUG") == "true" {
@@ -84,6 +85,18 @@ func (e *Application) Server(conf HTTPConfig) {
 		Config: conf,
 		Router: e.Router,
 	}
+}
+
+/*
+Validation - setup validation rules
+*/
+func (e *Application) Validation(fileName string) error {
+	err := e.validator.loadRules(fileName)
+	if err != nil {
+		return err
+	}
+	e.Router.SetValidator(&e.validator)
+	return nil
 }
 
 /*

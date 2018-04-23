@@ -18,7 +18,7 @@ type Context struct {
 	Next        func(*Context)
 	Request     *http.Request
 	Writer      http.ResponseWriter
-	Validation  interface{}
+	Validation  methodRules
 }
 
 // RawContext - raw context struct to save raw data

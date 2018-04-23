@@ -99,6 +99,9 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 	var dataMap map[string]interface{}
 	if len(uuidx) > 0 {
 		dataMap = data.(map[string]interface{})
+		if dataMap == nil {
+			dataMap = make(map[string]interface{})
+		}
 		for key, v := range uuidx {
 			dataMap[key] = v
 		}

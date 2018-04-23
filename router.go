@@ -20,10 +20,11 @@ type Handler interface {
 
 // Router — main struct for routing HTTP-requests
 type Router struct {
-	ID       string
-	Routes   []string
-	router   *httprouter.Router
-	dispatch func(*Context)
+	ID        string
+	Routes    []string
+	router    *httprouter.Router
+	validator *Validator
+	dispatch  func(*Context)
 }
 
 // NewRouter - router constructor
@@ -32,48 +33,56 @@ func NewRouter() *Router {
 		router: httprouter.New(),
 	}
 }
+func (r *Router) SetValidator(v *Validator) {
+	r.validator = v
+}
 
 // GetRouter - getting router method
 func (r *Router) GetRouter() *httprouter.Router {
 	return r.router
 }
 
+func (r *Router) getValidationForPath(path, method string) methodRules {
+	method = strings.ToLower(method)
+	return r.validator.Rules[path][method]
+}
+
 // GET - HTTP-method GET setting handler
-func (r *Router) GET(path string, h HandlerFunc, v interface{}) {
-	r.router.GET(path, r.handle(h, v))
+func (r *Router) GET(path string, h HandlerFunc) {
+	r.router.GET(path, r.handle(h, r.getValidationForPath(path, "GET")))
 }
 
 // POST - HTTP-method POST setting handler
-func (r *Router) POST(path string, h HandlerFunc, v interface{}) {
-	r.router.POST(path, r.handle(h, v))
+func (r *Router) POST(path string, h HandlerFunc) {
+	r.router.POST(path, r.handle(h, r.getValidationForPath(path, "POST")))
 }
 
 // PUT - HTTP-method PUT setting handler
-func (r *Router) PUT(path string, h HandlerFunc, v interface{}) {
-	r.router.PUT(path, r.handle(h, v))
+func (r *Router) PUT(path string, h HandlerFunc) {
+	r.router.PUT(path, r.handle(h, r.getValidationForPath(path, "PUT")))
 }
 
 // DELETE - HTTP-method DELETE setting handler
-func (r *Router) DELETE(path string, h HandlerFunc, v interface{}) {
-	r.router.DELETE(path, r.handle(h, v))
+func (r *Router) DELETE(path string, h HandlerFunc) {
+	r.router.DELETE(path, r.handle(h, r.getValidationForPath(path, "DELETE")))
 }
 
 // PATCH - HTTP-method PATCH setting handler
-func (r *Router) PATCH(path string, h HandlerFunc, v interface{}) {
-	r.router.PATCH(path, r.handle(h, v))
+func (r *Router) PATCH(path string, h HandlerFunc) {
+	r.router.PATCH(path, r.handle(h, r.getValidationForPath(path, "PATCH")))
 }
 
 // OPTIONS - HTTP-method OPTIONS setting handler
-func (r *Router) OPTIONS(path string, h HandlerFunc, v interface{}) {
-	r.router.OPTIONS(path, r.handle(h, v))
+func (r *Router) OPTIONS(path string, h HandlerFunc) {
+	r.router.OPTIONS(path, r.handle(h, r.getValidationForPath(path, "OPTIONS")))
 }
 
 // HEAD - HTTP-method HEAD setting handler
-func (r *Router) HEAD(path string, h HandlerFunc, v interface{}) {
-	r.router.HEAD(path, r.handle(h, v))
+func (r *Router) HEAD(path string, h HandlerFunc) {
+	r.router.HEAD(path, r.handle(h, r.getValidationForPath(path, "HEAD")))
 }
 
-func (r *Router) handle(h HandlerFunc, v interface{}) httprouter.Handle {
+func (r *Router) handle(h HandlerFunc, v methodRules) httprouter.Handle {
 	return func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		body, err := parseBody(req)
 		if err != nil {

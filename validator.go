@@ -5,47 +5,73 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"reflect"
 	"strconv"
 	"strings"
+
+	lib "github.com/niklucky/go-lib"
 )
+
+type Validator struct {
+	Rules map[string]routeRules
+}
+
+func (v *Validator) loadRules(fileName string) error {
+	fileData, err := lib.ReadFile(fileName)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(fileData, &v.Rules)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type routeRules map[string]methodRules
+
+type methodRules struct {
+	Params  map[string]validation  `json:"params"`
+	Query   map[string]validation  `json:"query"`
+	Body    map[string]validation  `json:"body"`
+	Options map[string]interface{} `json:"options"`
+}
+
+type validation struct {
+	InputType string `json:"type"`
+	Required  bool   `json:"required"`
+	Name      string `json:"name"`
+}
 
 func (e *Application) validate(ctx *Context) (err error) {
 	var errs []string
 	if isDebug {
-		log.Printf("Validation: %+v", ctx.Validation)
+		log.Printf("Validation rules: %+v", ctx.Validation)
 	}
 	v := ctx.Validation
-
-	rt := reflect.TypeOf(v)
-	for i := 0; i < rt.NumField(); i++ {
-		field := rt.Field(i)
-		if field.Name == "Query" {
-			ctx.Query, err = validateMap(field.Type, ctx.Raw.Query)
-			if err != nil {
-				errs = append(errs, "Query: "+err.Error())
-			}
-		}
-		if field.Name == "Params" {
-			ctx.Params, err = validateMap(field.Type, ctx.Raw.Params)
-			if err != nil {
-				errs = append(errs, "Params: "+err.Error())
-			}
-		}
-		if field.Name == "Body" {
-			var body map[string]interface{}
-			json.Unmarshal(ctx.Raw.Body, &body)
-			var b KeyStorage
-			for key, v := range body {
-				b.Set(key, v)
-			}
-			ctx.Body, err = validateMap(field.Type, b)
-			if err != nil {
-				errs = append(errs, "Params: "+err.Error())
-			}
+	if v.Params != nil {
+		ctx.Params, err = validateMap(v.Params, ctx.Raw.Params)
+		if err != nil {
+			errs = append(errs, "Params: "+err.Error())
 		}
 	}
-
+	if v.Query != nil {
+		ctx.Query, err = validateMap(v.Query, ctx.Raw.Query)
+		if err != nil {
+			errs = append(errs, "Query: "+err.Error())
+		}
+	}
+	if v.Body != nil {
+		var body map[string]interface{}
+		json.Unmarshal(ctx.Raw.Body, &body)
+		var b KeyStorage
+		for key, v := range body {
+			b.Set(key, v)
+		}
+		ctx.Body, err = validateMap(v.Body, b)
+		if err != nil {
+			errs = append(errs, "Params: "+err.Error())
+		}
+	}
 	ctx.Options.Set("params", getParamsFromQuery(ctx.Raw.Query))
 
 	if len(errs) > 0 {
@@ -75,36 +101,30 @@ func getParamsFromQuery(q KeyStorage) interface{} {
 	return p
 }
 
-func validateMap(rt reflect.Type, dv KeyStorage) (ks KeyStorage, err error) {
+func validateMap(vm map[string]validation, dv KeyStorage) (ks KeyStorage, err error) {
 	var errs []string
 	var typeErr error
-	nf := rt.NumField()
-	for n := 0; n < nf; n++ {
+	for key, val := range vm {
 		var v interface{}
-		field := rt.Field(n)
-		// fmt.Printf("--- Fields:  %+v — %+v\n", field.Name, field.Tag)
-		var fieldName string
-		if field.Tag.Get("input") != "" {
-			fieldName = field.Tag.Get("input")
-		} else {
-			fieldName = field.Name
+		var name = key
+		if val.Name != "" {
+			name = val.Name
 		}
-		value := dv.Get(fieldName)
+		value := dv.Get(name)
 		// fmt.Printf("Value: %s - %+v\n", fieldName, value)
-		required := field.Tag.Get("required")
-		if dv.Get(fieldName) == nil {
-			if required == "true" {
-				errs = append(errs, field.Name+" is not defined")
+		if value == nil {
+			if val.Required {
+				errs = append(errs, name+" is not defined")
 			}
 			continue
 		}
 
-		v, typeErr = validateType(field.Name, value, field.Type.String())
+		v, typeErr = validateType(name, value, val.InputType)
 		if typeErr != nil {
 			errs = append(errs, typeErr.Error())
 			continue
 		}
-		ks.Set(field.Name, v)
+		ks.Set(name, v)
 	}
 	if len(errs) > 0 {
 		return ks, errors.New(strings.Join(errs, ", "))

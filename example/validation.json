@@ -1,0 +1,23 @@
+{
+  "/users": {
+    "get": {
+      "params": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "name": "Id"
+        }
+      }
+    }
+  },
+  "/users/:id": {
+    "get": {
+      "params": {
+        "id": {
+          "type": "string",
+          "required": true
+        }
+      }
+    }
+  }
+}

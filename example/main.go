@@ -31,16 +31,16 @@ func init() {
 func main() {
 	engine := vodka.New()
 	engine.Server(config.HTTPServer)
+	engine.Validation("./validation.json")
 
 	userCtrl := controllers.NewUsers(userModule)
-	var userValidation controllers.UserValidation
 
-	engine.Router.GET("/users", userCtrl.Find, userValidation.Find)
-	engine.Router.GET("/users/:id", userCtrl.FindByID, userValidation.FindByID)
-	engine.Router.POST("/users", userCtrl.Create, userValidation.Create)
-	engine.Router.PUT("/users/:id", userCtrl.UpdateByID, userValidation.UpdateByID)
-	engine.Router.PUT("/users", userCtrl.Update, userValidation.Update)
-	engine.Router.DELETE("/users/:id", userCtrl.DeleteByID, userValidation.FindByID)
+	engine.Router.GET("/users", userCtrl.Find)
+	engine.Router.GET("/users/:id", userCtrl.FindByID)
+	engine.Router.POST("/users", userCtrl.Create)
+	engine.Router.PUT("/users/:id", userCtrl.UpdateByID)
+	engine.Router.PUT("/users", userCtrl.Update)
+	engine.Router.DELETE("/users/:id", userCtrl.DeleteByID)
 
 	for {
 		engine.Start()
