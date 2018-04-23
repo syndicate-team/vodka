@@ -38,6 +38,8 @@ func populateStructByMap(rv reflect.Value, data map[string]interface{}) interfac
 				st.Field(i).SetBool(getBool(v))
 			case "time.Time":
 				st.Field(i).Set(reflect.ValueOf(getTime(v)))
+			default:
+				st.Field(i).Set(reflect.ValueOf(v))
 			}
 		}
 	}

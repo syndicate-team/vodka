@@ -15,12 +15,12 @@ type API struct {
 
 // User — struct that describes User
 type User struct {
-	ID        string    `db:"id" uuid:"true" key:"true" json:"id"`
-	Name      string    `db:"name" json:"name"`
-	CreatedAt time.Time `db:"created_at" json:"createdAt"`
-	Amount    float64   `db:"amount"`
-	Count     int64     `db:"count"`
-	Status    string    `db:"status_name"`
+	ID        string      `db:"id" uuid:"true" key:"true" json:"id"`
+	Name      interface{} `db:"name" json:"name"`
+	CreatedAt time.Time   `db:"created_at" json:"createdAt"`
+	Amount    float64     `db:"amount"`
+	Count     int64       `db:"count"`
+	Status    string      `db:"status_name"`
 }
 
 const source = "users"

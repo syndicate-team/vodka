@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/syndicatedb/vodka"
 	"github.com/syndicatedb/vodka/base"
 	"github.com/syndicatedb/vodka/example/modules/users"
 )
@@ -60,4 +61,11 @@ func NewUsers(m *users.API) *Users {
 	return &Users{
 		Controller: base.NewController(m),
 	}
+}
+
+func (ctrl *Users) Find(ctx *vodka.Context) (interface{}, error) {
+	items, err := ctrl.Controller.Find(ctx)
+	// a := items.([]users.User)
+	// fmt.Printf("a: %+v\n", a)
+	return items, err
 }
