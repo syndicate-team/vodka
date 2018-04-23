@@ -46,7 +46,7 @@ func (psql Postgres) Builder() builders.Builder {
 }
 
 /*
-Exec - executing SQL-query and returning *Rows
+Exec - executing SQL-query and returning Result
 */
 func (psql *Postgres) Exec(SQL string) (sql.Result, error) {
 	if err := psql.checkConnection(); err != nil {
