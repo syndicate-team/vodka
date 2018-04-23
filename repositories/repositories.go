@@ -19,6 +19,8 @@ type Recorder interface {
 	Delete(QueryMap) (interface{}, error)
 	DeleteByID(interface{}) (interface{}, error)
 	Update(QueryMap, map[string]interface{}) (interface{}, error)
+	// SetMapper - setting mapper to build collection
+	SetMapper(mapper Mapper)
 }
 
 /*
