@@ -10,7 +10,7 @@ import (
 
 	"github.com/syndicatedb/vodka/lib/adapters"
 
-	lib "github.com/niklucky/go-lib"
+	lib "github.com/syndicatedb/go-lib"
 )
 
 const (

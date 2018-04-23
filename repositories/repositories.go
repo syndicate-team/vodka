@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/niklucky/vodka/builders"
+	"github.com/syndicatedb/vodka/builders"
 )
 
 const (

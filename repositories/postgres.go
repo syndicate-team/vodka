@@ -7,13 +7,13 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/niklucky/vodka/builders"
+	"github.com/syndicatedb/vodka/builders"
 
-	"github.com/niklucky/vodka"
-	"github.com/niklucky/vodka/adapters"
 	uuid "github.com/nu7hatch/gouuid"
+	"github.com/syndicatedb/vodka"
+	"github.com/syndicatedb/vodka/adapters"
 
-	lib "github.com/niklucky/go-lib"
+	lib "github.com/syndicatedb/go-lib"
 )
 
 /*

@@ -1,7 +1,7 @@
 package base
 
 import (
-	"github.com/niklucky/vodka/repositories"
+	"github.com/syndicatedb/vodka/repositories"
 )
 
 // Service - base service interface that implements basic CRUD methods for base controller

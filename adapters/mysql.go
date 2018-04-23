@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
-	"github.com/niklucky/vodka/builders"
+	"github.com/syndicatedb/vodka/builders"
 )
 
 /*

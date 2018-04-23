@@ -1,7 +1,7 @@
 package base
 
 import (
-	"github.com/niklucky/vodka"
+	"github.com/syndicatedb/vodka"
 )
 
 /*

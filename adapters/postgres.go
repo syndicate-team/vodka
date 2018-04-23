@@ -6,7 +6,7 @@ import (
 	"log"
 
 	_ "github.com/lib/pq" // PostgreSQL driver
-	"github.com/niklucky/vodka/builders"
+	"github.com/syndicatedb/vodka/builders"
 )
 
 const driverName = "postgres"

@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/niklucky/vodka"
-	"github.com/niklucky/vodka/adapters"
-	"github.com/niklucky/vodka/example/controllers"
-	"github.com/niklucky/vodka/example/modules/users"
+	"github.com/syndicatedb/vodka"
+	"github.com/syndicatedb/vodka/adapters"
+	"github.com/syndicatedb/vodka/example/controllers"
+	"github.com/syndicatedb/vodka/example/modules/users"
 )
 
 type infrastructure struct {

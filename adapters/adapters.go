@@ -3,7 +3,7 @@ package adapters
 import (
 	"database/sql"
 
-	"github.com/niklucky/vodka/builders"
+	"github.com/syndicatedb/vodka/builders"
 )
 
 /*
