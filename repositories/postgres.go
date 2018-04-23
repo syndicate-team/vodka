@@ -13,7 +13,7 @@ import (
 	"github.com/syndicatedb/vodka"
 	"github.com/syndicatedb/vodka/adapters"
 
-	lib "github.com/syndicatedb/go-lib"
+	lib "github.com/niklucky/go-lib"
 )
 
 /*
