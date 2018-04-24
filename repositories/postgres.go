@@ -125,11 +125,7 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 	}
 	// We have primary key
 	if ds.key != "" && dataMap[ds.key] != nil {
-		items, err := ds.Find(dataMap, defaultParams)
-		if err != nil {
-			return data, err
-		}
-		return items.([]interface{})[0], nil
+		return ds.Find(dataMap, defaultParams)
 	}
 	// We have nothing, just returning payload back
 	return data, nil
