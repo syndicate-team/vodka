@@ -8,14 +8,24 @@
           "name": "Id"
         }
       }
+    },
+    "post": {
+      "body": {
+        "mobile_phone": {
+          "type": "string",
+          "required": true,
+          "name": "mobilePhone"
+        }
+      }
     }
   },
   "/users/:id": {
     "get": {
       "params": {
-        "id": {
+        "Id": {
           "type": "string",
-          "required": true
+          "required": true,
+          "name": "id"
         }
       }
     }

@@ -111,7 +111,7 @@ func validateMap(vm map[string]validation, dv KeyStorage) (ks KeyStorage, err er
 			name = val.Name
 		}
 		value := dv.Get(name)
-		// fmt.Printf("Value: %s - %+v\n", fieldName, value)
+		fmt.Printf("Value: %s - %+v\n", name, value)
 		if value == nil {
 			if val.Required {
 				errs = append(errs, name+" is not defined")
@@ -124,34 +124,12 @@ func validateMap(vm map[string]validation, dv KeyStorage) (ks KeyStorage, err er
 			errs = append(errs, typeErr.Error())
 			continue
 		}
-		ks.Set(name, v)
+		ks.Set(key, v)
 	}
 	if len(errs) > 0 {
 		return ks, errors.New(strings.Join(errs, ", "))
 	}
 	return
-}
-
-func validateBody(rule interface{}, b []byte, p KeyStorage) (KeyStorage, error) {
-	if rule == nil {
-		return KeyStorage{}, nil
-	}
-	var err error
-	if string(b) == "" {
-		return p, nil
-	}
-	if rule == nil {
-		return p, nil
-	}
-	var data interface{}
-	if err = json.Unmarshal(b, &data); err != nil {
-		return p, err
-	}
-	for key, v := range data.(map[string]interface{}) {
-		p.Set(key, v)
-	}
-	// err = validateMap(rule, p)
-	return p, err
 }
 
 func validateType(key string, value interface{}, t string) (res interface{}, err error) {
