@@ -23,13 +23,13 @@ type User struct {
 	Status    string      `db:"status_name"`
 }
 
-const source = "users"
+const source = "public.users"
 
 // New - module constructor
 func New(adapter adapters.Adapter) *API {
 	var u User
 	repo := repositories.NewPostgres(adapter, source, &u)
-	repo.Join("statuses", "id", "status_id", "", []string{"name as status_name"})
+	repo.Join("public.statuses", "id", "status_id", "", []string{"name as status_name"})
 	return &API{
 		Service: base.NewService(repo),
 	}

@@ -112,7 +112,8 @@ Every table in SQL query have to have Alias. If you'll not provide - it will be 
 */
 func (sql *postgres) Join(jp Join) Builder {
 	sql.parts.join = append(sql.parts.join, jp)
-	sql.addToSources(jp.Source, jp.Source)
+	length := len(sql.sources) + 1
+	sql.addToSources(jp.Source, fmt.Sprintf("t%d", length))
 	return sql
 }
 
@@ -220,7 +221,7 @@ func (sql *postgres) buildFields() string {
 	}
 	for _, j := range sql.parts.join {
 		for _, f := range j.Fields {
-			fields = append(fields, j.Source+"."+f)
+			fields = append(fields, sql.getAliasBySource(j.Source)+"."+f)
 		}
 	}
 	return " " + strings.Join(fields, ", ")
@@ -231,8 +232,9 @@ func (sql *postgres) buildJoin() (join string) {
 		return
 	}
 	for _, j := range sql.parts.join {
-		join += " " + strings.ToUpper(j.Type) + " JOIN " + j.Source + " AS " + j.Source + " ON "
-		join += j.Source + "." + j.Key + " = " + sql.getAliasBySource(sql.parts.table) + "." + j.TargetKey
+		src := sql.getAliasBySource(j.Source)
+		join += " " + strings.ToUpper(j.Type) + " JOIN " + j.Source + " AS " + src + " ON "
+		join += src + "." + j.Key + " = " + sql.getAliasBySource(sql.parts.table) + "." + j.TargetKey
 	}
 	return
 }

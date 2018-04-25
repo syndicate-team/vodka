@@ -22,7 +22,7 @@
   "/users/:id": {
     "get": {
       "params": {
-        "Id": {
+        "id": {
           "type": "string",
           "required": true,
           "name": "id"
