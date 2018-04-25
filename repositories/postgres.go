@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -94,14 +95,13 @@ func (ds *Postgres) Join(source, key, targetKey, joinType string, fields []strin
 Create - save data to Storage with Adapter
 */
 func (ds *Postgres) Create(data interface{}) (interface{}, error) {
+	if data == nil {
+		return nil, errors.New("create_data_nil")
+	}
 	// Checking for auto generated uuid. If found — generating
 	uuidx := ds.generateUUID()
-	var dataMap map[string]interface{}
+	dataMap := data.(map[string]interface{})
 	if len(uuidx) > 0 {
-		dataMap = data.(map[string]interface{})
-		if dataMap == nil {
-			dataMap = make(map[string]interface{})
-		}
 		for key, v := range uuidx {
 			dataMap[key] = v
 		}
@@ -125,7 +125,7 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 	}
 	// We have primary key
 	if ds.key != "" && dataMap[ds.key] != nil {
-		return ds.Find(dataMap, defaultParams)
+		return ds.FindByID(dataMap[ds.key])
 	}
 	// We have nothing, just returning payload back
 	return data, nil
@@ -242,7 +242,7 @@ func (ds *Postgres) FindByID(id interface{}) (interface{}, error) {
 	if len(data) > 0 {
 		return ds.mapItem(data[0])
 	}
-	return nil, vodka.NewError(404, "not_found", "Item not found")
+	return nil, vodka.NewError(400, "not_found", "Item not found")
 }
 
 func (ds *Postgres) fetch(query QueryMap, params interface{}) ([]interface{}, error) {
