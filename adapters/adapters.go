@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/syndicatedb/vodka/builders"
 )
@@ -15,6 +16,17 @@ type Adapter interface {
 	QueryRow(string) (*sql.Row, error)
 	Query(...interface{}) (*sql.Rows, error)
 	Builder() builders.Builder
+}
+
+/*
+KVAdapter - Key/value adapter intarface for DataServices
+*/
+type KVAdapter interface {
+	Connect() error
+	Get(key string) ([]byte, error)
+	Set(key string, value []byte, expiry time.Duration) error
+	SetJSON(key string, value interface{}, expiry time.Duration) error
+	Del(key string) error
 }
 
 /*
