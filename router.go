@@ -33,6 +33,8 @@ func NewRouter() *Router {
 		router: httprouter.New(),
 	}
 }
+
+// SetValidator - setting validator for routes
 func (r *Router) SetValidator(v *Validator) {
 	r.validator = v
 }

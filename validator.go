@@ -11,6 +11,7 @@ import (
 	lib "github.com/niklucky/go-lib"
 )
 
+// Validator — struct that contains validation rules
 type Validator struct {
 	Rules map[string]routeRules
 }
@@ -48,6 +49,11 @@ func (e *Application) validate(ctx *Context) (err error) {
 		log.Printf("Validation rules: %+v", ctx.Validation)
 	}
 	v := ctx.Validation
+	if v.Options != nil {
+		for key, value := range v.Options {
+			ctx.Options.Set(key, value)
+		}
+	}
 	if v.Params != nil {
 		ctx.Params, err = validateMap(v.Params, ctx.Raw.Params)
 		if err != nil {
