@@ -15,6 +15,15 @@ type Redis struct {
 	client *redis.Client
 }
 
+/*
+NewRedis - adapter constructor
+*/
+func NewRedis(config Config) *Redis {
+	return &Redis{
+		config: config,
+	}
+}
+
 // Connect - connecting to repository
 func (r *Redis) Connect() error {
 	return r.connect()
@@ -46,7 +55,7 @@ func (r *Redis) Del(key string) error {
 /*
 Set - setting key with value and expiration time
 */
-func (r *Redis) Set(key string, value []byte, exp time.Duration) error {
+func (r *Redis) Set(key string, value interface{}, exp time.Duration) error {
 	err := r.checkConnection()
 	if err != nil {
 		return err
