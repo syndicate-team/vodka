@@ -21,6 +21,7 @@ type Recorder interface {
 	Update(QueryMap, map[string]interface{}) (interface{}, error)
 	// SetMapper - setting mapper to build collection
 	SetMapper(mapper Mapper)
+	Exec(string) (interface{}, error)
 }
 
 /*

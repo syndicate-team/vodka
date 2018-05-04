@@ -4,23 +4,20 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
 	"strconv"
 
-	"github.com/syndicatedb/vodka/builders"
-
+	lib "github.com/niklucky/go-lib"
 	uuid "github.com/nu7hatch/gouuid"
 	"github.com/syndicatedb/vodka"
 	"github.com/syndicatedb/vodka/adapters"
-
-	lib "github.com/niklucky/go-lib"
+	"github.com/syndicatedb/vodka/builders"
 )
 
 /*
-Postgres - is responsible for storing/fetching data
+MySQL - is responsible for storing/fetching data
 */
-type Postgres struct {
+type MySQL struct {
 	adapter            adapters.Adapter
 	key                string
 	model              interface{}
@@ -30,35 +27,11 @@ type Postgres struct {
 	joinedRepositories map[string]builders.Join
 }
 
-var defaultParams = make(map[string]interface{})
-
-// getKeyByModel - getting primary key for model to select after create
-func getKeyByModel(model interface{}) (key string) {
-	st := reflect.ValueOf(model).Elem().Type()
-	for i := 0; i < st.NumField(); i++ {
-		field := st.Field(i)
-		if field.Tag.Get("key") != "" {
-			key = field.Name
-			if field.Tag.Get("db") != "" {
-				key = field.Tag.Get("db")
-			}
-		}
-	}
-	return
-}
-
-func isDebug() (debug bool) {
-	if os.Getenv("DEBUG") == "true" {
-		return true
-	}
-	return
-}
-
 /*
-NewPostgres - Postgres repository recorder
+NewMySQL - MySQL repository recorder
 */
-func NewPostgres(adapter adapters.Adapter, source string, model interface{}) Recorder {
-	return &Postgres{
+func NewMySQL(adapter adapters.Adapter, source string, model interface{}) Recorder {
+	return &MySQL{
 		adapter:            adapter,
 		key:                getKeyByModel(model),
 		source:             source,
@@ -71,7 +44,7 @@ func NewPostgres(adapter adapters.Adapter, source string, model interface{}) Rec
 // SetMapper - setting mapper to process data.
 // By default will be used base mapper that fills provided Model
 // or just will return interface{} with type map[string]interface{}
-func (ds *Postgres) SetMapper(m Mapper) {
+func (ds *MySQL) SetMapper(m Mapper) {
 	ds.mapper = m
 }
 
@@ -81,7 +54,7 @@ func (ds *Postgres) SetMapper(m Mapper) {
 @param joinKey - key of joined source to match with main source
 @sourceKey - key of main source to join
 */
-func (ds *Postgres) Join(source, key, targetKey, joinType string, fields []string) {
+func (ds *MySQL) Join(source, key, targetKey, joinType string, fields []string) {
 	ds.joinedRepositories[source] = builders.Join{
 		Source:    source,
 		Key:       key,
@@ -94,7 +67,7 @@ func (ds *Postgres) Join(source, key, targetKey, joinType string, fields []strin
 /*
 Create - save data to Storage with Adapter
 */
-func (ds *Postgres) Create(data interface{}) (interface{}, error) {
+func (ds *MySQL) Create(data interface{}) (interface{}, error) {
 	if data == nil {
 		return nil, errors.New("create_data_nil")
 	}
@@ -131,7 +104,7 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 	return data, nil
 }
 
-func (ds *Postgres) generateUUID() (fields map[string]string) {
+func (ds *MySQL) generateUUID() (fields map[string]string) {
 	fields = make(map[string]string)
 	st := reflect.ValueOf(ds.model).Elem().Type()
 	for i := 0; i < st.NumField(); i++ {
@@ -152,7 +125,7 @@ func (ds *Postgres) generateUUID() (fields map[string]string) {
 /*
 Delete - deleteing from storage by query
 */
-func (ds Postgres) Delete(q QueryMap) (interface{}, error) {
+func (ds *MySQL) Delete(q QueryMap) (interface{}, error) {
 	builder := ds.adapter.Builder()
 	SQL := builder.Delete().From(ds.source).Where(q).Build()
 	if ds.debug {
@@ -169,7 +142,7 @@ func (ds Postgres) Delete(q QueryMap) (interface{}, error) {
 /*
 DeleteByID - deleteing from storage by query
 */
-func (ds *Postgres) DeleteByID(id interface{}) (interface{}, error) {
+func (ds *MySQL) DeleteByID(id interface{}) (interface{}, error) {
 	builder := ds.adapter.Builder()
 	q := make(map[string]interface{})
 	q["id"] = id
@@ -187,7 +160,7 @@ func (ds *Postgres) DeleteByID(id interface{}) (interface{}, error) {
 /*
 Update - updating item in storage by query and payload
 */
-func (ds *Postgres) Update(q QueryMap, payload map[string]interface{}) (interface{}, error) {
+func (ds *MySQL) Update(q QueryMap, payload map[string]interface{}) (interface{}, error) {
 	builder := ds.adapter.Builder()
 	SQL := builder.Update(ds.source).Set(payload).Where(q).Limit(1, 0).Build()
 	if ds.debug {
@@ -211,7 +184,7 @@ func (ds *Postgres) Update(q QueryMap, payload map[string]interface{}) (interfac
 Find - Finding data by query (map key=value) and QueryModificator
 Will return Collection
 */
-func (ds *Postgres) Find(query QueryMap, params ParamsMap) (interface{}, error) {
+func (ds *MySQL) Find(query QueryMap, params ParamsMap) (interface{}, error) {
 	rows, err := ds.fetch(query, params)
 	if err != nil {
 		return nil, err
@@ -228,7 +201,7 @@ func (ds *Postgres) Find(query QueryMap, params ParamsMap) (interface{}, error) 
 /*
 FindByID - fetching Object by id. interface{} because id could be string or int
 */
-func (ds *Postgres) FindByID(id interface{}) (interface{}, error) {
+func (ds *MySQL) FindByID(id interface{}) (interface{}, error) {
 	q := make(map[string]interface{})
 	if ds.key != "" {
 		q[ds.key] = id
@@ -246,7 +219,7 @@ func (ds *Postgres) FindByID(id interface{}) (interface{}, error) {
 }
 
 // Exec - executes custom SQL and returns result
-func (ds *Postgres) Exec(SQL string) (interface{}, error) {
+func (ds *MySQL) Exec(SQL string) (interface{}, error) {
 	rows, err := ds.adapter.Query(SQL)
 	if err != nil {
 		fmt.Println("Error: ", err)
@@ -266,7 +239,7 @@ func (ds *Postgres) Exec(SQL string) (interface{}, error) {
 	return coll, err
 }
 
-func (ds *Postgres) fetch(query QueryMap, params interface{}) ([]interface{}, error) {
+func (ds *MySQL) fetch(query QueryMap, params interface{}) ([]interface{}, error) {
 	qb := ds.adapter.Builder()
 	var fields []string
 	mod := parseParams(params)
@@ -308,7 +281,7 @@ func (ds *Postgres) fetch(query QueryMap, params interface{}) ([]interface{}, er
 	return ds.buildResult(rows)
 }
 
-func (ds *Postgres) buildResult(rows *sql.Rows) ([]interface{}, error) {
+func (ds *MySQL) buildResult(rows *sql.Rows) ([]interface{}, error) {
 	var result []interface{}
 	i := 0
 	cols, _ := rows.Columns()
@@ -350,7 +323,7 @@ func (ds *Postgres) buildResult(rows *sql.Rows) ([]interface{}, error) {
 	return result, nil
 }
 
-func (ds *Postgres) mapCollection(data []interface{}) (interface{}, error) {
+func (ds *MySQL) mapCollection(data []interface{}) (interface{}, error) {
 	if ds.mapper != nil {
 		return ds.mapper.Collection(data)
 	}
@@ -358,7 +331,7 @@ func (ds *Postgres) mapCollection(data []interface{}) (interface{}, error) {
 	return data, nil
 }
 
-func (ds *Postgres) mapItem(data interface{}) (interface{}, error) {
+func (ds *MySQL) mapItem(data interface{}) (interface{}, error) {
 	if ds.mapper != nil {
 		return ds.mapper.Item(data)
 	}
