@@ -1,5 +1,11 @@
 package builders
 
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
 // NewPostgres - Postgres SQL builder
 func NewPostgres() Builder {
 	return &postgres{}
@@ -40,4 +46,62 @@ type OrderParam struct {
 	OrderBy string
 	Asc     bool
 	Desc    bool
+}
+
+type parts struct {
+	table      string
+	fields     []string
+	where      map[string]interface{}
+	join       []Join
+	order      []OrderParam
+	limit      int
+	offset     int
+	insertData interface{}
+	returnID   string
+}
+
+func formatValue(value interface{}) (fv string) {
+	if v, ok := value.(string); ok {
+		fv = "= '" + v + "'"
+		return
+	}
+	if v, ok := value.([]int64); ok {
+		var vs []string
+		for _, n := range v {
+			vs = append(vs, fmt.Sprintf("%v", n))
+		}
+		fv = " IN (" + strings.Join(vs, ",") + ")"
+		return
+	}
+	if v, ok := value.([]float64); ok {
+		var vs []string
+		for _, n := range v {
+			vs = append(vs, fmt.Sprintf("%v", n))
+		}
+		fv = " IN (" + strings.Join(vs, ",") + ")"
+		return
+	}
+	if v, ok := value.([]string); ok {
+		var vs []string
+		for _, n := range v {
+			vs = append(vs, "'"+n+"'")
+		}
+		fv = " IN (" + strings.Join(vs, ",") + ")"
+		return
+	}
+	fv = "=" + fmt.Sprintf("%v", value)
+	return
+}
+
+func toString(value interface{}) (str string) {
+	if v, ok := value.(float64); ok {
+		str = strconv.FormatFloat(v, 'f', 8, 64)
+	} else if v, ok := value.(int64); ok {
+		str = strconv.FormatInt(v, 10)
+	} else if v, ok := value.(int); ok {
+		str = strconv.Itoa(v)
+	} else {
+		str = fmt.Sprint("'", value, "'")
+	}
+	return
 }

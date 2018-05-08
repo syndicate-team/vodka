@@ -7,9 +7,9 @@ import (
 )
 
 /*
-postgres - abstract builder for SQL-queries. Now adapted for Postgres
+mysql - abstract builder for SQL-queries. Now adapted for mysql
 */
-type postgres struct {
+type mysql struct {
 	queryType string
 	parts     parts
 	sources   map[string]string // map that contains tables with aliases
@@ -18,7 +18,7 @@ type postgres struct {
 /*
 Select - will set query type to SELECT and sets fields array.
 */
-func (sql *postgres) Select(fields []string) Builder {
+func (sql *mysql) Select(fields []string) Builder {
 	sql.queryType = queryTypeSelect
 	sql.parts.fields = append(sql.parts.fields, fields...)
 	return sql
@@ -27,7 +27,7 @@ func (sql *postgres) Select(fields []string) Builder {
 /*
 Insert - will set query type to INSERT and sets table
 */
-func (sql *postgres) Insert(table string) Builder {
+func (sql *mysql) Insert(table string) Builder {
 	sql.queryType = queryTypeInsert
 	sql.parts.table = table
 	return sql
@@ -36,7 +36,7 @@ func (sql *postgres) Insert(table string) Builder {
 /*
 Update — will set queryType to UPDATE and sets table
 */
-func (sql *postgres) Update(table string) Builder {
+func (sql *mysql) Update(table string) Builder {
 	// setting table
 	sql.queryType = queryTypeUpdate
 	sql.parts.table = table
@@ -47,7 +47,7 @@ func (sql *postgres) Update(table string) Builder {
 /*
 Delete — will set queryType to DELETE and sets table
 */
-func (sql *postgres) Delete() Builder {
+func (sql *mysql) Delete() Builder {
 	sql.queryType = queryTypeDelete
 	return sql
 }
@@ -55,7 +55,7 @@ func (sql *postgres) Delete() Builder {
 /*
 Set - alias for Values()
 */
-func (sql *postgres) Set(data interface{}) Builder {
+func (sql *mysql) Set(data interface{}) Builder {
 	return sql.Values(data)
 }
 
@@ -64,7 +64,7 @@ Values - map that will be users for Insert.
 — key is for column
 — value for column value
 */
-func (sql *postgres) Values(data interface{}) Builder {
+func (sql *mysql) Values(data interface{}) Builder {
 	sql.parts.insertData = data
 	return sql
 }
@@ -72,7 +72,7 @@ func (sql *postgres) Values(data interface{}) Builder {
 /*
 From - will set table for query
 */
-func (sql *postgres) From(table string) Builder {
+func (sql *mysql) From(table string) Builder {
 	sql.parts.table = table
 	sql.addToSources(table, tablePrefix)
 	return sql
@@ -81,7 +81,7 @@ func (sql *postgres) From(table string) Builder {
 /*
 ReturnID - return auto increment `id` after INSERT query
 */
-func (sql *postgres) ReturnID(id string) Builder {
+func (sql *mysql) ReturnID(id string) Builder {
 	sql.parts.returnID = id
 	return sql
 }
@@ -89,7 +89,7 @@ func (sql *postgres) ReturnID(id string) Builder {
 /*
 Where - map that contains keys=values for SELECT/UPDATE/DELETE
 */
-func (sql *postgres) Where(where map[string]interface{}) Builder {
+func (sql *mysql) Where(where map[string]interface{}) Builder {
 	sql.parts.where = where
 	return sql
 }
@@ -98,7 +98,7 @@ func (sql *postgres) Where(where map[string]interface{}) Builder {
 Join - join source with params into query.
 Every table in SQL query have to have Alias. If you'll not provide - it will be generated
 */
-func (sql *postgres) Join(jp Join) Builder {
+func (sql *mysql) Join(jp Join) Builder {
 	sql.parts.join = append(sql.parts.join, jp)
 	length := len(sql.sources) + 1
 	sql.addToSources(jp.Source, fmt.Sprintf("t%d", length))
@@ -108,7 +108,7 @@ func (sql *postgres) Join(jp Join) Builder {
 /*
 Order - will set order by params for query
 */
-func (sql *postgres) Order(o OrderParam) Builder {
+func (sql *mysql) Order(o OrderParam) Builder {
 	sql.parts.order = append(sql.parts.order, o)
 	return sql
 }
@@ -118,7 +118,7 @@ Limit - limit and offset.
 — offset by default is 0
 - limit by default is defaultLimit
 */
-func (sql *postgres) Limit(limit, offset int) Builder {
+func (sql *mysql) Limit(limit, offset int) Builder {
 	sql.parts.limit = limit
 	sql.parts.offset = offset
 	return sql
@@ -127,7 +127,7 @@ func (sql *postgres) Limit(limit, offset int) Builder {
 /*
 Build - method that builds from params into SQL string
 */
-func (sql postgres) Build() string {
+func (sql mysql) Build() string {
 	if sql.queryType == queryTypeSelect {
 		return sql.buildSelect()
 	}
@@ -143,14 +143,14 @@ func (sql postgres) Build() string {
 	return ""
 }
 
-func (sql *postgres) buildUpdate() (SQL string) {
+func (sql *mysql) buildUpdate() (SQL string) {
 	SQL = queryTypeUpdate
 	SQL += sql.buildTable(true)
 	SQL += sql.buildSetter()
 	SQL += sql.buildWhere()
 	return
 }
-func (sql *postgres) buildInsert() (SQL string) {
+func (sql *mysql) buildInsert() (SQL string) {
 	SQL = queryTypeInsert
 	SQL += " INTO " + sql.parts.table
 	SQL += sql.buildValues()
@@ -159,27 +159,27 @@ func (sql *postgres) buildInsert() (SQL string) {
 	}
 	return
 }
-func (sql *postgres) buildDelete() (SQL string) {
+func (sql *mysql) buildDelete() (SQL string) {
 	SQL = queryTypeDelete
 	SQL += sql.buildFrom(true)
 	SQL += sql.buildWhere()
 	return
 }
 
-func (sql *postgres) buildValues() string {
+func (sql *mysql) buildValues() string {
 	var keys []string
 	var values []string
 
 	if data, ok := sql.parts.insertData.(map[string]interface{}); ok {
 		for key, value := range data {
-			keys = append(keys, ""+key+"")
+			keys = append(keys, "`"+key+"`")
 			values = append(values, toString(value))
 		}
 	}
 	return "(" + strings.Join(keys, ",") + ") VALUES (" + strings.Join(values, ",") + ")"
 }
 
-func (sql *postgres) buildSelect() (SQL string) {
+func (sql *mysql) buildSelect() (SQL string) {
 	SQL = queryTypeSelect
 	SQL += sql.buildFields()
 	SQL += sql.buildFrom(true)
@@ -190,16 +190,16 @@ func (sql *postgres) buildSelect() (SQL string) {
 	return
 }
 
-func (sql *postgres) buildFrom(alias bool) string {
+func (sql *mysql) buildFrom(alias bool) string {
 	return " FROM " + sql.buildTable(alias)
 }
-func (sql *postgres) buildTable(alias bool) (t string) {
+func (sql *mysql) buildTable(alias bool) (t string) {
 	if alias == false {
 		return " " + sql.parts.table
 	}
 	return " " + sql.parts.table + " as " + sql.getAliasBySource(sql.parts.table)
 }
-func (sql *postgres) buildFields() string {
+func (sql *mysql) buildFields() string {
 	var fields []string
 	if len(sql.parts.fields) == 0 {
 		sql.parts.fields = []string{"*"}
@@ -215,7 +215,7 @@ func (sql *postgres) buildFields() string {
 	return " " + strings.Join(fields, ", ")
 }
 
-func (sql *postgres) buildJoin() (join string) {
+func (sql *mysql) buildJoin() (join string) {
 	if len(sql.parts.join) == 0 {
 		return
 	}
@@ -227,7 +227,7 @@ func (sql *postgres) buildJoin() (join string) {
 	return
 }
 
-func (sql *postgres) buildWhere() (where string) {
+func (sql *mysql) buildWhere() (where string) {
 	if len(sql.parts.where) == 0 {
 		return
 	}
@@ -260,7 +260,7 @@ func (sql *postgres) buildWhere() (where string) {
 	return where + strings.Join(w, " AND ")
 }
 
-func (sql *postgres) buildSetter() (where string) {
+func (sql *mysql) buildSetter() (where string) {
 	if len(sql.parts.where) == 0 {
 		return
 	}
@@ -275,7 +275,7 @@ func (sql *postgres) buildSetter() (where string) {
 	return where + strings.Join(w, ", ")
 }
 
-func (sql *postgres) buildLimit() (limit string) {
+func (sql *mysql) buildLimit() (limit string) {
 	if sql.parts.limit != 0 {
 		limit = " LIMIT "
 		limit += strconv.Itoa(sql.parts.limit)
@@ -285,7 +285,7 @@ func (sql *postgres) buildLimit() (limit string) {
 	return
 }
 
-func (sql *postgres) buildOrderBy() (order string) {
+func (sql *mysql) buildOrderBy() (order string) {
 	if len(sql.parts.order) > 0 {
 		var arr []string
 		for _, o := range sql.parts.order {
@@ -308,14 +308,14 @@ func (sql *postgres) buildOrderBy() (order string) {
 	return
 }
 
-func (sql *postgres) addToSources(table, id string) {
+func (sql *mysql) addToSources(table, id string) {
 	if sql.sources == nil {
 		sql.sources = make(map[string]string)
 	}
 	sql.sources[table] = id
 }
 
-func (sql *postgres) getAliasBySource(source string) string {
+func (sql *mysql) getAliasBySource(source string) string {
 	if sql.sources[source] != "" {
 		return sql.sources[source]
 	}

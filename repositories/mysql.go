@@ -88,6 +88,7 @@ func (ds *MySQL) Create(data interface{}) (interface{}, error) {
 	if ds.debug {
 		fmt.Println("Create SQL: ", SQL)
 	}
+	fmt.Println("SQL is: ", SQL)
 	result, err := ds.adapter.Exec(SQL)
 	if err != nil {
 		return nil, err
