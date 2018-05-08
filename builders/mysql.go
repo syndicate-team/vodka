@@ -161,7 +161,7 @@ func (sql *mysql) buildInsert() (SQL string) {
 }
 func (sql *mysql) buildDelete() (SQL string) {
 	SQL = queryTypeDelete
-	SQL += sql.buildFrom(true)
+	SQL += sql.buildFrom(false)
 	SQL += sql.buildWhere()
 	return
 }
