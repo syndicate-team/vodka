@@ -147,7 +147,7 @@ func (sql *mysql) buildUpdate() (SQL string) {
 	SQL = queryTypeUpdate
 	SQL += sql.buildTable(true)
 	SQL += sql.buildSetter()
-	SQL += sql.buildWhere()
+	SQL += sql.buildWhere(true)
 	return
 }
 func (sql *mysql) buildInsert() (SQL string) {
@@ -162,7 +162,7 @@ func (sql *mysql) buildInsert() (SQL string) {
 func (sql *mysql) buildDelete() (SQL string) {
 	SQL = queryTypeDelete
 	SQL += sql.buildFrom(false)
-	SQL += sql.buildWhere()
+	SQL += sql.buildWhere(false)
 	return
 }
 
@@ -184,7 +184,7 @@ func (sql *mysql) buildSelect() (SQL string) {
 	SQL += sql.buildFields()
 	SQL += sql.buildFrom(true)
 	SQL += sql.buildJoin()
-	SQL += sql.buildWhere()
+	SQL += sql.buildWhere(true)
 	SQL += sql.buildOrderBy()
 	SQL += sql.buildLimit()
 	return
@@ -227,7 +227,7 @@ func (sql *mysql) buildJoin() (join string) {
 	return
 }
 
-func (sql *mysql) buildWhere() (where string) {
+func (sql *mysql) buildWhere(alias bool) (where string) {
 	if len(sql.parts.where) == 0 {
 		return
 	}
@@ -239,7 +239,11 @@ func (sql *mysql) buildWhere() (where string) {
 			for _, st := range sl {
 				str = append(str, strconv.FormatInt(st, 10))
 			}
-			w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+" IN ("+strings.Join(str, ",")+")")
+			if alias {
+				w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+" IN ("+strings.Join(str, ",")+")")
+				continue
+			}
+			w = append(w, key+" IN ("+strings.Join(str, ",")+")")
 			continue
 		}
 		if sl, ok := value.([]string); ok {
@@ -247,7 +251,11 @@ func (sql *mysql) buildWhere() (where string) {
 			for _, st := range sl {
 				str = append(str, `'`+st+`'`)
 			}
-			w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+" IN ("+strings.Join(str, ",")+")")
+			if alias {
+				w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+" IN ("+strings.Join(str, ",")+")")
+				continue
+			}
+			w = append(w, key+" IN ("+strings.Join(str, ",")+")")
 			continue
 		}
 		str := toString(value)
@@ -255,7 +263,10 @@ func (sql *mysql) buildWhere() (where string) {
 		if strings.Index(key, "=") == -1 && strings.Index(key, ">") == -1 && strings.Index(key, "<") == -1 {
 			sign = "="
 		}
-		w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+sign+str)
+		if alias {
+			w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+sign+str)
+		}
+		w = append(w, key+sign+str)
 	}
 	return where + strings.Join(w, " AND ")
 }
