@@ -42,7 +42,7 @@ func (db *MySQL) Connect() error {
 Builder - returns Query builder (SQL) instance
 */
 func (db MySQL) Builder() builders.Builder {
-	return builders.NewPostgres()
+	return builders.NewMySQL()
 }
 
 /*

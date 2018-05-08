@@ -11,6 +11,11 @@ func NewPostgres() Builder {
 	return &postgres{}
 }
 
+// NewMySQL - MySQL SQL builder
+func NewMySQL() Builder {
+	return &mysql{}
+}
+
 /*
 Builder - interface for query builder for adapter and data service
 */
