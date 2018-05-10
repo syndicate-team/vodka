@@ -283,7 +283,7 @@ func (sql *mysql) buildSetter() (where string) {
 	if data, ok := sql.parts.insertData.(map[string]interface{}); ok {
 		for key, value := range data {
 			str := toString(value)
-			w = append(w, ""+key+" = "+str)
+			w = append(w, "`"+key+"` = "+str)
 		}
 	}
 	return where + strings.Join(w, ", ")
