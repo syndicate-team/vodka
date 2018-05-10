@@ -242,9 +242,10 @@ func (sql *mysql) buildWhere(alias bool) (where string) {
 			if alias {
 				w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+" IN ("+strings.Join(str, ",")+")")
 				continue
+			} else {
+				w = append(w, key+" IN ("+strings.Join(str, ",")+")")
+				continue
 			}
-			w = append(w, key+" IN ("+strings.Join(str, ",")+")")
-			continue
 		}
 		if sl, ok := value.([]string); ok {
 			var str []string
@@ -254,9 +255,10 @@ func (sql *mysql) buildWhere(alias bool) (where string) {
 			if alias {
 				w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+" IN ("+strings.Join(str, ",")+")")
 				continue
+			} else {
+				w = append(w, key+" IN ("+strings.Join(str, ",")+")")
+				continue
 			}
-			w = append(w, key+" IN ("+strings.Join(str, ",")+")")
-			continue
 		}
 		str := toString(value)
 		sign := ""
@@ -265,8 +267,9 @@ func (sql *mysql) buildWhere(alias bool) (where string) {
 		}
 		if alias {
 			w = append(w, sql.getAliasBySource(sql.parts.table)+"."+key+sign+str)
+		} else {
+			w = append(w, key+sign+str)
 		}
-		w = append(w, key+sign+str)
 	}
 	return where + strings.Join(w, " AND ")
 }
