@@ -145,9 +145,9 @@ func (sql mysql) Build() string {
 
 func (sql *mysql) buildUpdate() (SQL string) {
 	SQL = queryTypeUpdate
-	SQL += sql.buildTable(true)
+	SQL += sql.buildTable(false)
 	SQL += sql.buildSetter()
-	SQL += sql.buildWhere(true)
+	SQL += sql.buildWhere(false)
 	return
 }
 func (sql *mysql) buildInsert() (SQL string) {
