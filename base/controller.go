@@ -35,7 +35,7 @@ func NewController(srv Service) Controller {
 }
 
 func (c *ctrl) FindByID(ctx *vodka.Context) (interface{}, error) {
-	return c.Service.FindByID(ctx.Params.GetString("id"))
+	return c.Service.FindByID(ctx.Params.Get("id"))
 }
 
 func (c *ctrl) Find(ctx *vodka.Context) (interface{}, error) {
