@@ -133,7 +133,9 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 		return ds.FindByID(dataMap[ds.key])
 	}
 	// We have nothing, just returning payload back
-	return ds.mapItem(data)
+	vm := reflect.ValueOf(ds.model)
+	a := populateStructByMap(vm, dataMap)
+	return ds.mapItem(a)
 }
 
 func (ds *Postgres) generateUUID() (fields map[string]string) {
