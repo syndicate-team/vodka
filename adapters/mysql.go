@@ -11,7 +11,7 @@ import (
 )
 
 /*
-MySQL - low-level Postgres adapters for DataServices
+MySQL - low-level MySQL adapters for DataServices
 */
 type MySQL struct {
 	driverName     string
