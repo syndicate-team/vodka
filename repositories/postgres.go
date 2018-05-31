@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"reflect"
 	"strconv"
@@ -119,16 +120,22 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Result: %+v\n", result)
+	var id int64
 	// We have auto increment id that is returned
-	if id, err := result.LastInsertId(); err == nil {
+	if id, err = result.LastInsertId(); err == nil {
 		return ds.FindByID(id)
 	}
+	println("ID: ", id)
+	println("Error: ", err)
 	// We have primary key
 	if ds.key != "" && dataMap[ds.key] != nil {
 		return ds.FindByID(dataMap[ds.key])
 	}
 	// We have nothing, just returning payload back
-	return data, nil
+	vm := reflect.ValueOf(ds.model)
+	a := populateStructByMap(vm, dataMap)
+	return ds.mapItem(a)
 }
 
 func (ds *Postgres) generateUUID() (fields map[string]string) {
