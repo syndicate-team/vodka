@@ -2,7 +2,6 @@ package builders
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -122,7 +121,6 @@ Limit - limit and offset.
 func (sql *mysql) Limit(limit, offset int) Builder {
 	sql.parts.limit = limit
 	sql.parts.offset = offset
-	log.Println("LIMIT PARTS", sql.parts.limit)
 	return sql
 }
 
@@ -298,7 +296,6 @@ func (sql *mysql) buildLimit() (limit string) {
 		limit += " OFFSET "
 		limit += strconv.Itoa(sql.parts.offset)
 	}
-	log.Println("LIMIT", limit)
 	return
 }
 

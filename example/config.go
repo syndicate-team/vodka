@@ -15,6 +15,7 @@ type Config struct {
 	Version    string           `json:"version"`
 	HTTPServer vodka.HTTPConfig `json:"http_server"`
 	Postgres   adapters.Config  `json:"postgres"`
+	MySQL      adapters.Config  `json:"mysql"`
 }
 
 /*

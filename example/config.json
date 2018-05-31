@@ -11,5 +11,14 @@
     "database": "test",
     "timeout": 1,
     "attempts": 5
+  },
+  "mysql": {
+    "host": "localhost",
+    "user": "root",
+    "port": 3306,
+    "password": "12345",
+    "database": "test",
+    "timeout": 1,
+    "attempts": 5
   }
 }
