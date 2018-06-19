@@ -33,6 +33,12 @@ func (sql *mysql) Insert(table string) Builder {
 	return sql
 }
 
+func (sql *mysql) Save(table string) Builder {
+	sql.queryType = queryTypeSave
+	sql.parts.table = table
+	return sql
+}
+
 /*
 Update — will set queryType to UPDATE and sets table
 */
@@ -121,6 +127,21 @@ Limit - limit and offset.
 func (sql *mysql) Limit(limit, offset int) Builder {
 	sql.parts.limit = limit
 	sql.parts.offset = offset
+	return sql
+}
+
+func (sql *mysql) OnConflictAction(action string) Builder {
+	sql.parts.onConflictAction = action
+	return sql
+}
+
+func (sql *mysql) OnConflictFields(fields []string) Builder {
+	sql.parts.onConflictFields = fields
+	return sql
+}
+
+func (sql *mysql) OnConflictConstraint(constraint string) Builder {
+	sql.parts.onConflictConstraint = constraint
 	return sql
 }
 

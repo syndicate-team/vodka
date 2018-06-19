@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 
@@ -103,6 +104,58 @@ func (ds *MySQL) Create(data interface{}) (interface{}, error) {
 	}
 	// We have nothing, just returning payload back
 	return data, nil
+}
+
+func (ds *MySQL) Save(data interface{}, params ParamsMap) (interface{}, error) {
+	var SQL string
+	qb := ds.adapter.Builder()
+	mod := parseParams(params)
+
+	// Checking for auto generated uuid. If found — generating
+	uuidx := ds.generateUUID()
+	dataMap := data.(map[string]interface{})
+	if len(uuidx) > 0 {
+		for key, v := range uuidx {
+			dataMap[key] = v
+		}
+		data = dataMap
+	}
+
+	if mod.OnConflictConstraint == "" {
+		fields := lib.GetStructTags(reflect.ValueOf(ds.model).Elem(), "unique", true)
+		qb.Save(ds.source).Values(data)
+		qb.OnConflictFields(fields).OnConflictAction(mod.onConflictAction)
+		SQL = qb.Build()
+	} else {
+		qb.Save(ds.source).Values(data)
+		qb.OnConflictConstraint(mod.OnConflictConstraint)
+		qb.OnConflictAction(mod.onConflictAction)
+		SQL = qb.Build()
+	}
+
+	if ds.debug {
+		fmt.Println("Create SQL: ", SQL)
+	}
+	result, err := ds.adapter.Exec(SQL)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Result: %+v\n", result)
+	var id int64
+	// We have auto increment id that is returned
+	if id, err = result.LastInsertId(); err == nil {
+		return ds.FindByID(id)
+	}
+	println("ID: ", id)
+	println("Error: ", err)
+	// We have primary key
+	if ds.key != "" && dataMap[ds.key] != nil {
+		return ds.FindByID(dataMap[ds.key])
+	}
+	// We have nothing, just returning payload back
+	vm := reflect.ValueOf(ds.model)
+	a := populateStructByMap(vm, dataMap)
+	return ds.mapItem(a)
 }
 
 func (ds *MySQL) generateUUID() (fields map[string]string) {

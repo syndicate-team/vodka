@@ -14,6 +14,8 @@ type Controller interface {
 	FindByID(*vodka.Context) (interface{}, error)
 	// Create - creating new row
 	Create(*vodka.Context) (interface{}, error)
+	// Save - crete new row with on conflict param
+	Save(*vodka.Context) (interface{}, error)
 	// Update — updating items by Query
 	Update(*vodka.Context) (interface{}, error)
 	// UpdateByID — updating item by ID in params
@@ -48,6 +50,14 @@ func (c *ctrl) Find(ctx *vodka.Context) (interface{}, error) {
 
 func (c *ctrl) Create(ctx *vodka.Context) (interface{}, error) {
 	return c.Service.Create(ctx.Body.Map())
+}
+
+func (c *ctrl) Save(ctx *vodka.Context) (interface{}, error) {
+	// var params map[string]interface{}
+	// if p, ok := ctx.Options.Get("params").(map[string]interface{}); ok {
+	// 	params = p
+	// }
+	return c.Service.Save(ctx.Query.Map(), ctx.Body.Map())
 }
 
 func (c *ctrl) Update(ctx *vodka.Context) (interface{}, error) {

@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/syndicatedb/vodka/example/modules/items"
+
 	"github.com/syndicatedb/vodka"
 	"github.com/syndicatedb/vodka/adapters"
 	"github.com/syndicatedb/vodka/example/controllers"
@@ -21,6 +23,7 @@ var err error
 
 var userModule *users.API
 var orderModule *orders.API
+var itemsModule *items.API
 
 func init() {
 	if config, err = NewConfig("./config.json"); err != nil {
@@ -31,6 +34,7 @@ func init() {
 
 	userModule = users.New(repos.Postgres)
 	orderModule = orders.New(repos.MySQL)
+	itemsModule = items.New(repos.Postgres)
 }
 
 func main() {
@@ -40,6 +44,7 @@ func main() {
 
 	userCtrl := controllers.NewUsers(userModule)
 	orderCtrl := controllers.NewOrders(orderModule)
+	itemsCtrl := controllers.NewItems(itemsModule)
 
 	engine.Router.GET("/users", userCtrl.Find)
 	engine.Router.GET("/users/:id", userCtrl.FindByID)
@@ -49,6 +54,8 @@ func main() {
 	engine.Router.DELETE("/users/:id", userCtrl.DeleteByID)
 
 	engine.Router.GET("/orders", orderCtrl.Find)
+
+	engine.Router.POST("/items", itemsCtrl.Save)
 
 	for {
 		engine.Start()

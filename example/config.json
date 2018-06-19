@@ -5,7 +5,7 @@
   },
   "postgres": {
     "host": "localhost",
-    "user": "postgres",
+    "user": "evgeny",
     "port": 5432,
     "password": "12345",
     "database": "test",

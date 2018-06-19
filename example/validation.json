@@ -32,5 +32,19 @@
   },
   "/orders": {
     "get": {}
+  },
+  "/items": {
+    "post": {
+      "body":{
+        "name": { "type": "string" },
+        "count": { "type": "int64" },
+        "amount": { "type": "float64" },
+        "status": { "type": "string" }
+      },
+      "query": {
+        "OnConflictConstraint": { "type": "string" },
+        "onConflictAction": { "type": "string" }
+      }
+    }
   }
 }

@@ -22,6 +22,7 @@ Builder - interface for query builder for adapter and data service
 type Builder interface {
 	Select([]string) Builder
 	Insert(string) Builder
+	Save(string) Builder
 	Update(string) Builder
 	Delete() Builder
 	ReturnID(string) Builder
@@ -32,6 +33,9 @@ type Builder interface {
 	Limit(int, int) Builder
 	Join(Join) Builder
 	Order(OrderParam) Builder
+	OnConflictAction(string) Builder
+	OnConflictFields([]string) Builder
+	OnConflictConstraint(string) Builder
 	Build() string
 }
 
@@ -54,15 +58,18 @@ type OrderParam struct {
 }
 
 type parts struct {
-	table      string
-	fields     []string
-	where      map[string]interface{}
-	join       []Join
-	order      []OrderParam
-	limit      int
-	offset     int
-	insertData interface{}
-	returnID   string
+	table                string
+	fields               []string
+	where                map[string]interface{}
+	join                 []Join
+	order                []OrderParam
+	limit                int
+	offset               int
+	insertData           interface{}
+	returnID             string
+	onConflictAction     string
+	onConflictFields     []string
+	onConflictConstraint string
 }
 
 func formatValue(value interface{}) (fv string) {

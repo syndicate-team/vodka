@@ -12,6 +12,7 @@ const (
 const (
 	queryTypeSelect = "SELECT"
 	queryTypeInsert = "INSERT"
+	queryTypeSave   = "SAVE"
 	queryTypeUpdate = "UPDATE"
 	queryTypeDelete = "DELETE"
 	tablePrefix     = "t"

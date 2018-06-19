@@ -138,6 +138,57 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 	return ds.mapItem(a)
 }
 
+func (ds *Postgres) Save(data interface{}, params ParamsMap) (interface{}, error) {
+	var SQL string
+	qb := ds.adapter.Builder()
+	mod := parseParams(params)
+
+	// Checking for auto generated uuid. If found — generating
+	uuidx := ds.generateUUID()
+	dataMap := data.(map[string]interface{})
+	if len(uuidx) > 0 {
+		for key, v := range uuidx {
+			dataMap[key] = v
+		}
+		data = dataMap
+	}
+
+	if mod.OnConflictConstraint == "" {
+		fields := ds.getUniqueFields()
+		qb.Save(ds.source).Values(data)
+		qb.OnConflictFields(fields).OnConflictAction(mod.onConflictAction)
+		SQL = qb.Build()
+	} else {
+		qb.Save(ds.source).Values(data)
+		qb.OnConflictConstraint(mod.OnConflictConstraint)
+		qb.OnConflictAction(mod.onConflictAction)
+		SQL = qb.Build()
+	}
+
+	if ds.debug {
+		fmt.Println("Create SQL: ", SQL)
+	}
+	result, err := ds.adapter.Exec(SQL)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Result: %+v\n", result)
+	var id int64
+	// We have auto increment id that is returned
+	if id, err = result.LastInsertId(); err == nil {
+		if id != 0 {
+			return ds.FindByID(id)
+		}
+	}
+	println("ID: ", id)
+	println("Error: ", err.Error())
+
+	// We have nothing, just returning payload back
+	vm := reflect.ValueOf(ds.model)
+	a := populateStructByMap(vm, dataMap)
+	return ds.mapItem(a)
+}
+
 func (ds *Postgres) generateUUID() (fields map[string]string) {
 	fields = make(map[string]string)
 	st := reflect.ValueOf(ds.model).Elem().Type()
@@ -153,6 +204,23 @@ func (ds *Postgres) generateUUID() (fields map[string]string) {
 			fields[fieldName] = gid.String()
 		}
 	}
+	return
+}
+
+func (ds *Postgres) getUniqueFields() (fields []string) {
+	st := reflect.ValueOf(ds.model).Elem().Type()
+	for i := 0; i < st.NumField(); i++ {
+		field := st.Field(i)
+		fieldTag := field.Tag.Get("unique")
+		if fieldTag != "" {
+			var fieldName string
+			if field.Tag.Get("db") != "" {
+				fieldName = field.Tag.Get("db")
+			}
+			fields = append(fields, fieldName)
+		}
+	}
+
 	return
 }
 

@@ -2,6 +2,7 @@ package builders
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -29,6 +30,12 @@ Insert - will set query type to INSERT and sets table
 */
 func (sql *postgres) Insert(table string) Builder {
 	sql.queryType = queryTypeInsert
+	sql.parts.table = table
+	return sql
+}
+
+func (sql *postgres) Save(table string) Builder {
+	sql.queryType = queryTypeSave
 	sql.parts.table = table
 	return sql
 }
@@ -124,6 +131,21 @@ func (sql *postgres) Limit(limit, offset int) Builder {
 	return sql
 }
 
+func (sql *postgres) OnConflictAction(action string) Builder {
+	sql.parts.onConflictAction = action
+	return sql
+}
+
+func (sql *postgres) OnConflictFields(fields []string) Builder {
+	sql.parts.onConflictFields = fields
+	return sql
+}
+
+func (sql *postgres) OnConflictConstraint(constraint string) Builder {
+	sql.parts.onConflictConstraint = constraint
+	return sql
+}
+
 /*
 Build - method that builds from params into SQL string
 */
@@ -133,6 +155,9 @@ func (sql postgres) Build() string {
 	}
 	if sql.queryType == queryTypeInsert {
 		return sql.buildInsert()
+	}
+	if sql.queryType == queryTypeSave {
+		return sql.buildSave()
 	}
 	if sql.queryType == queryTypeDelete {
 		return sql.buildDelete()
@@ -159,13 +184,17 @@ func (sql *postgres) buildInsert() (SQL string) {
 	}
 	return
 }
+func (sql *postgres) buildSave() (SQL string) {
+	SQL = sql.buildInsert()
+	SQL += sql.buildOnConflict()
+	return
+}
 func (sql *postgres) buildDelete() (SQL string) {
 	SQL = queryTypeDelete
 	SQL += sql.buildFrom(true)
 	SQL += sql.buildWhere()
 	return
 }
-
 func (sql *postgres) buildValues() string {
 	var keys []string
 	var values []string
@@ -304,6 +333,47 @@ func (sql *postgres) buildOrderBy() (order string) {
 			arr = append(arr, item)
 		}
 		order = " ORDER BY " + strings.Join(arr, ",")
+	}
+	return
+}
+
+func (sql *postgres) buildOnConflict() (conflict string) {
+	if sql.parts.onConflictConstraint != "" {
+		conflict = " ON CONFLICT ON CONSTRAINT " + sql.parts.onConflictConstraint
+		conflict += sql.buildOnConflictAction()
+		log.Println("SQL IN BUILD ON CONFLICT", conflict)
+		return
+	}
+	if len(sql.parts.onConflictFields) != 0 {
+		conflict = " ON CONFLICT (" + strings.Join(sql.parts.onConflictFields, ",") + ")"
+		conflict += sql.buildOnConflictAction()
+		return
+	}
+	return
+}
+
+func (sql *postgres) buildOnConflictAction() (conflict string) {
+	action := sql.parts.onConflictAction
+
+	if action != "" {
+		if strings.ToUpper(action) == "NOTHING" {
+			conflict = " DO NOTHING"
+		}
+		if strings.ToUpper(action) == "UPDATE" {
+			conflict = " DO UPDATE SET "
+
+			var w []string
+			if data, ok := sql.parts.insertData.(map[string]interface{}); ok {
+				for key, value := range data {
+					str := toString(value)
+					w = append(w, ""+key+" = "+str)
+				}
+			}
+			conflict += strings.Join(w, ", ")
+
+			log.Println("ON CONFLICT UPDATE", conflict)
+		}
+		return
 	}
 	return
 }

@@ -16,6 +16,7 @@ type Recorder interface {
 	Find(QueryMap, ParamsMap) (interface{}, error)
 	FindByID(interface{}) (interface{}, error)
 	Create(interface{}) (interface{}, error)
+	Save(interface{}, ParamsMap) (interface{}, error)
 	Delete(QueryMap) (interface{}, error)
 	DeleteByID(interface{}) (interface{}, error)
 	Update(QueryMap, map[string]interface{}) (interface{}, error)
@@ -38,10 +39,12 @@ type ParamsMap map[string]interface{}
 QueryModificator - modification of query
 */
 type QueryModificator struct {
-	fields  []string
-	skip    int
-	limit   int
-	orderBy []builders.OrderParam
+	fields               []string
+	skip                 int
+	limit                int
+	orderBy              []builders.OrderParam
+	onConflictAction     string
+	OnConflictConstraint string
 }
 
 // Mapper - mapping interface
