@@ -135,8 +135,8 @@ func parseParams(params interface{}) (m QueryModificator) {
 			orderParamsArr = append(orderParamsArr, orderParams)
 			m.orderBy = orderParamsArr
 		}
-		if p["OnConflictConstraint"] != nil {
-			m.OnConflictConstraint = p["OnConflictConstraint"].(string)
+		if p["onConflictConstraint"] != nil {
+			m.OnConflictConstraint = p["onConflictConstraint"].(string)
 		}
 		if p["onConflictAction"] != nil {
 			m.onConflictAction = p["onConflictAction"].(string)

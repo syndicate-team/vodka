@@ -104,6 +104,12 @@ func getParamsFromQuery(q KeyStorage) interface{} {
 	if q.Get("__order") != nil {
 		p["order"] = q.GetString("__order")
 	}
+	if q.Get("__conflictAction") != nil {
+		p["onConflictAction"] = q.GetString("__conflictAction")
+	}
+	if q.Get("__conflictKey") != nil {
+		p["onConflictConstraint"] = q.GetString("__conflictKey")
+	}
 	return p
 }
 

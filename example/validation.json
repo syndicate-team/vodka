@@ -1,26 +1,48 @@
 {
   "/users": {
-    "get": {
-      "params": {
-        "id": {
-          "type": "string",
-          "required": true,
-          "name": "Id"
-        }
-      }
-    },
+    "get": {},
     "post": {
       "body": {
         "mobile_phone": {
           "type": "string",
           "required": true,
           "name": "mobilePhone"
+        },
+        "name": {
+          "type":"string"
         }
       }
     }
   },
   "/users/:id": {
     "get": {
+      "params": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "name": "id"
+        }
+      }
+    },
+    "patch": {
+      "params": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "name": "id"
+        }
+      },
+      "body": {
+        "mobile_phone": {
+          "type": "string",
+          "name": "mobilePhone"
+        },
+        "name": {
+          "type":"string"
+        }
+      }
+    },
+    "delete": {
       "params": {
         "id": {
           "type": "string",
@@ -40,10 +62,6 @@
         "count": { "type": "int64" },
         "amount": { "type": "float64" },
         "status": { "type": "string" }
-      },
-      "query": {
-        "OnConflictConstraint": { "type": "string" },
-        "onConflictAction": { "type": "string" }
       }
     }
   }

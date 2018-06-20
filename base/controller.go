@@ -53,11 +53,11 @@ func (c *ctrl) Create(ctx *vodka.Context) (interface{}, error) {
 }
 
 func (c *ctrl) Save(ctx *vodka.Context) (interface{}, error) {
-	// var params map[string]interface{}
-	// if p, ok := ctx.Options.Get("params").(map[string]interface{}); ok {
-	// 	params = p
-	// }
-	return c.Service.Save(ctx.Query.Map(), ctx.Body.Map())
+	var params map[string]interface{}
+	if p, ok := ctx.Options.Get("params").(map[string]interface{}); ok {
+		params = p
+	}
+	return c.Service.Save(ctx.Body.Map(), params)
 }
 
 func (c *ctrl) Update(ctx *vodka.Context) (interface{}, error) {

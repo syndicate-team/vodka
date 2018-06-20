@@ -138,6 +138,11 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 	return ds.mapItem(a)
 }
 
+/*
+Save - building anc executing SQL request with ON CONFLICT part.
+On conflicting fields with tag `unique` in model or on constraint name
+can DO UPDATE or DO NOTHING.
+*/
 func (ds *Postgres) Save(data interface{}, params ParamsMap) (interface{}, error) {
 	var SQL string
 	qb := ds.adapter.Builder()
@@ -153,12 +158,13 @@ func (ds *Postgres) Save(data interface{}, params ParamsMap) (interface{}, error
 		data = dataMap
 	}
 
+	// Checking for constraint name, if found creating SQL with conflict on constraint
 	if mod.OnConflictConstraint == "" {
 		fields := ds.getUniqueFields()
 		qb.Save(ds.source).Values(data)
 		qb.OnConflictFields(fields).OnConflictAction(mod.onConflictAction)
 		SQL = qb.Build()
-	} else {
+	} else { // Constraint not found, creating SQL with conflict on unique fields in model
 		qb.Save(ds.source).Values(data)
 		qb.OnConflictConstraint(mod.OnConflictConstraint)
 		qb.OnConflictAction(mod.onConflictAction)
@@ -166,27 +172,12 @@ func (ds *Postgres) Save(data interface{}, params ParamsMap) (interface{}, error
 	}
 
 	if ds.debug {
-		fmt.Println("Create SQL: ", SQL)
+		fmt.Println("Save SQL: ", SQL)
 	}
-	result, err := ds.adapter.Exec(SQL)
-	if err != nil {
-		return nil, err
-	}
-	log.Printf("Result: %+v\n", result)
-	var id int64
-	// We have auto increment id that is returned
-	if id, err = result.LastInsertId(); err == nil {
-		if id != 0 {
-			return ds.FindByID(id)
-		}
-	}
-	println("ID: ", id)
-	println("Error: ", err.Error())
 
-	// We have nothing, just returning payload back
-	vm := reflect.ValueOf(ds.model)
-	a := populateStructByMap(vm, dataMap)
-	return ds.mapItem(a)
+	// Just returning result back: created/updated row
+	// or [] if on conflict action was set to NOTHING
+	return ds.Exec(SQL)
 }
 
 func (ds *Postgres) generateUUID() (fields map[string]string) {

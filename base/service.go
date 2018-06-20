@@ -1,8 +1,6 @@
 package base
 
 import (
-	"log"
-
 	"github.com/syndicatedb/vodka/repositories"
 )
 
@@ -39,10 +37,8 @@ func (s *service) Create(payload interface{}) (interface{}, error) {
 	return s.repository.Create(payload)
 }
 
-func (s *service) Save(query, payload map[string]interface{}) (interface{}, error) {
-	log.Println("BODY", payload)
-	log.Println("QUERY", query)
-	return s.repository.Save(payload, query)
+func (s *service) Save(payload, params map[string]interface{}) (interface{}, error) {
+	return s.repository.Save(payload, params)
 }
 
 func (s *service) Update(query, payload map[string]interface{}) (interface{}, error) {

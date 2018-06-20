@@ -2,7 +2,6 @@ package builders
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -34,6 +33,9 @@ func (sql *postgres) Insert(table string) Builder {
 	return sql
 }
 
+/*
+Save - will set query type to SAVE and sets table
+*/
 func (sql *postgres) Save(table string) Builder {
 	sql.queryType = queryTypeSave
 	sql.parts.table = table
@@ -131,16 +133,26 @@ func (sql *postgres) Limit(limit, offset int) Builder {
 	return sql
 }
 
+/*
+OnConflictAction - setting on conflict action.
+Action must be 'UPDATE' of 'NOTHING'
+*/
 func (sql *postgres) OnConflictAction(action string) Builder {
 	sql.parts.onConflictAction = action
 	return sql
 }
 
+/*
+OnConflictFields - setting unique fields to run on conflict script on.
+*/
 func (sql *postgres) OnConflictFields(fields []string) Builder {
 	sql.parts.onConflictFields = fields
 	return sql
 }
 
+/*
+OnConflictConstraint - setting constraint name to run on conflict script.
+*/
 func (sql *postgres) OnConflictConstraint(constraint string) Builder {
 	sql.parts.onConflictConstraint = constraint
 	return sql
@@ -338,17 +350,19 @@ func (sql *postgres) buildOrderBy() (order string) {
 }
 
 func (sql *postgres) buildOnConflict() (conflict string) {
-	if sql.parts.onConflictConstraint != "" {
-		conflict = " ON CONFLICT ON CONSTRAINT " + sql.parts.onConflictConstraint
-		conflict += sql.buildOnConflictAction()
-		log.Println("SQL IN BUILD ON CONFLICT", conflict)
-		return
+	if sql.checkOnConflictParts() {
+		if sql.parts.onConflictConstraint != "" {
+			conflict = " ON CONFLICT ON CONSTRAINT " + sql.parts.onConflictConstraint
+			conflict += sql.buildOnConflictAction()
+			return
+		}
+		if len(sql.parts.onConflictFields) != 0 {
+			conflict = " ON CONFLICT (" + strings.Join(sql.parts.onConflictFields, ",") + ")"
+			conflict += sql.buildOnConflictAction()
+			return
+		}
 	}
-	if len(sql.parts.onConflictFields) != 0 {
-		conflict = " ON CONFLICT (" + strings.Join(sql.parts.onConflictFields, ",") + ")"
-		conflict += sql.buildOnConflictAction()
-		return
-	}
+
 	return
 }
 
@@ -369,13 +383,22 @@ func (sql *postgres) buildOnConflictAction() (conflict string) {
 					w = append(w, ""+key+" = "+str)
 				}
 			}
-			conflict += strings.Join(w, ", ")
-
-			log.Println("ON CONFLICT UPDATE", conflict)
+			conflict += strings.Join(w, ", ") + " RETURNING *"
 		}
 		return
 	}
 	return
+}
+
+func (sql *postgres) checkOnConflictParts() bool {
+	action := strings.ToUpper(sql.parts.onConflictAction)
+	if action == "UPDATE" || action == "NOTHING" {
+		if sql.parts.onConflictConstraint != "" || len(sql.parts.onConflictFields) != 0 {
+			return true
+		}
+		return false
+	}
+	return false
 }
 
 func (sql *postgres) addToSources(table, id string) {

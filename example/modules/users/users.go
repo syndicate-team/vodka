@@ -15,12 +15,10 @@ type API struct {
 
 // User — struct that describes User
 type User struct {
-	ID        string      `db:"id" uuid:"true" key:"true" json:"id"`
-	Name      interface{} `db:"name" json:"name"`
-	CreatedAt time.Time   `db:"created_at" json:"createdAt"`
-	Amount    float64     `db:"amount"`
-	Count     int64       `db:"count"`
-	Status    string      `db:"status_name"`
+	ID          string    `db:"id" uuid:"true" key:"true" json:"id"`
+	Name        string    `db:"name" json:"name"`
+	CreatedAt   time.Time `db:"created_at" json:"createdAt"`
+	MobilePhone string    `db:"mobile_phone" json:"mobilePhone"`
 }
 
 const source = "public.users"
@@ -29,7 +27,7 @@ const source = "public.users"
 func New(adapter adapters.Adapter) *API {
 	var u User
 	repo := repositories.NewPostgres(adapter, source, &u)
-	repo.Join("public.statuses", "id", "status_id", "", []string{"name as status_name"})
+	// repo.Join("public.statuses", "id", "status_id", "", []string{"name as status_name"})
 	return &API{
 		Service: base.NewService(repo),
 	}
