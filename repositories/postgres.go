@@ -238,7 +238,11 @@ DeleteByID - deleteing from storage by query
 func (ds *Postgres) DeleteByID(id interface{}) (interface{}, error) {
 	builder := ds.adapter.Builder()
 	q := make(map[string]interface{})
-	q["id"] = id
+	if ds.key != "" {
+		q[ds.key] = id
+	} else {
+		q["id"] = id
+	}
 	SQL := builder.Delete().From(ds.source).Where(q).Build()
 	if ds.debug {
 		fmt.Println("DeleteByID SQL: ", SQL)
