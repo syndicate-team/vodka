@@ -126,8 +126,6 @@ func (ds *Postgres) Create(data interface{}) (interface{}, error) {
 	if id, err = result.LastInsertId(); err == nil {
 		return ds.FindByID(id)
 	}
-	println("ID: ", id)
-	println("Error: ", err)
 	// We have primary key
 	if ds.key != "" && dataMap[ds.key] != nil {
 		return ds.FindByID(dataMap[ds.key])
