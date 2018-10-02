@@ -252,7 +252,7 @@ func validateType(key string, value interface{}, t string) (res interface{}, err
 		}
 	default:
 		fmt.Printf("I don't know about type %T!\n", v)
-		res = v
+		res = value
 		return
 	}
 
