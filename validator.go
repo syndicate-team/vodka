@@ -251,7 +251,12 @@ func validateType(key string, value interface{}, t string) (res interface{}, err
 			return
 		}
 	case bool:
-		res = v
+		if res == " true" {
+			res = true
+		}
+		if res == " false" {
+			res = false
+		}
 		return
 	default:
 		fmt.Printf("I don't know about type %T!\n", v)
