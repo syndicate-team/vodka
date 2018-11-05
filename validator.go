@@ -251,10 +251,10 @@ func validateType(key string, value interface{}, t string) (res interface{}, err
 			return
 		}
 	case bool:
-		if res == " true" {
+		if v == true {
 			res = true
 		}
-		if res == " false" {
+		if v == false {
 			res = false
 		}
 		return
