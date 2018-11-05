@@ -250,6 +250,9 @@ func validateType(key string, value interface{}, t string) (res interface{}, err
 			res = strings.Split(v, ",")
 			return
 		}
+	case bool:
+		res = v
+		return
 	default:
 		fmt.Printf("I don't know about type %T!\n", v)
 		return value, nil
