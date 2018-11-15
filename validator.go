@@ -123,9 +123,9 @@ func validateMap(vm map[string]validation, dv KeyStorage) (ks KeyStorage, err er
 			name = val.Name
 		}
 		value := dv.Get(name)
-		if isDebug {
-			fmt.Printf("Value: %s - %+v\n", name, value)
-		}
+		// if isDebug {
+		// 	fmt.Printf("Value: %s - %+v\n", name, value)
+		// }
 		if value == nil {
 			if val.Required {
 				errs = append(errs, name+" is not defined")
@@ -150,9 +150,9 @@ func validateType(key string, value interface{}, t string) (res interface{}, err
 	if value == nil {
 		return value, nil
 	}
-	if isDebug {
-		fmt.Printf("%T\n", value)
-	}
+	// if isDebug {
+	// 	fmt.Printf("%T\n", value)
+	// }
 	switch v := value.(type) {
 	case int64:
 		if t == "int64" {
