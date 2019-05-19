@@ -180,6 +180,10 @@ func validateType(key string, value interface{}, t string) (res interface{}, err
 			res = int64(v)
 			return
 		}
+		if t == "int" {
+			res = int(v)
+			return
+		}
 		if t == "float64" {
 			res = float64(v)
 			return
